@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Mentorship Matcher</title>
+<style>
+:root{
+  --bg:#0F1724;--surface:#1A2535;--surface2:#212f42;
+  --border:#2a3a52;--text:#E8EEF6;--muted:#7A8FA8;
+  --accent:#4A9EFF;--accent2:#2D7DE0;
+  --support:#FF6B6B;--standard:#F5C842;--interest:#4BCC7A;
+  --radius:10px;--mono:'Courier New',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;
+     background:var(--bg);color:var(--text);min-height:100vh;
+     display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+
+h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.tagline{font-size:13px;color:var(--muted);margin-bottom:36px}
+
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px 32px;width:100%;max-width:600px;
+  margin-bottom:20px;
+}
+.card h2{font-size:14px;font-weight:600;color:var(--muted);
+          letter-spacing:.6px;text-transform:uppercase;margin-bottom:18px}
+
+/* Upload zones */
+.upload-row{display:flex;gap:12px;margin-bottom:6px}
+.zone{
+  flex:1;border:1.5px dashed var(--border);border-radius:var(--radius);
+  padding:20px 12px;text-align:center;cursor:pointer;transition:.2s;
+  background:var(--bg);position:relative;
+}
+.zone:hover,.zone.drag{border-color:var(--accent);background:#4A9EFF0A}
+.zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.zone .icon{font-size:26px;margin-bottom:6px}
+.zone .ztitle{font-size:13px;font-weight:500;margin-bottom:3px}
+.zone .zsub{font-size:11px;color:var(--muted)}
+.zone.loaded{border-color:var(--interest);border-style:solid}
+.zone.loaded .ztitle{color:var(--interest)}
+.zone-note{font-size:11px;color:var(--muted);text-align:center;margin-bottom:18px}
+
+/* Options */
+.opt-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:13px}
+.opt-row label{color:var(--muted);width:140px;flex-shrink:0}
+.opt-row input[type=number]{
+  background:var(--bg);border:1px solid var(--border);color:var(--text);
+  border-radius:6px;padding:6px 10px;font-size:13px;width:80px;outline:none
+}
+.opt-row input:focus{border-color:var(--accent)}
+.opt-row .hint{font-size:11px;color:var(--muted)}
+
+/* Button */
+.btn{
+  width:100%;padding:12px;border-radius:var(--radius);border:none;
+  font-size:14px;font-weight:600;cursor:pointer;transition:.15s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2)}
+.btn-primary:disabled{opacity:.45;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--accent);
+           border:1px solid var(--accent);margin-top:10px}
+.btn-ghost:hover{background:#4A9EFF11}
+
+/* Progress */
+.progress-wrap{margin-top:16px;display:none}
+.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
+.progress-fill{height:100%;background:var(--accent);width:0;transition:.4s;border-radius:2px}
+.progress-steps{display:flex;flex-direction:column;gap:4px}
+.step{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.step.done{color:var(--interest)}.step.active{color:var(--text)}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
+.step.done .step-dot{background:var(--interest)}
+.step.active .step-dot{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+
+/* Results */
+#results{display:none}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--surface2);border-radius:8px;padding:14px;text-align:center}
+.stat .n{font-family:var(--mono);font-size:24px;font-weight:700}
+.stat .l{font-size:11px;color:var(--muted);margin-top:3px}
+.stat.good .n{color:var(--interest)}
+.stat.warn .n{color:var(--support)}
+.stat.info .n{color:var(--accent)}
+
+.tier-row{display:flex;gap:8px;margin-bottom:20px}
+.tier-pill{
+  flex:1;padding:10px;border-radius:8px;text-align:center;font-size:12px;
+}
+.tier-pill .tn{font-size:18px;font-weight:700;font-family:var(--mono)}
+.tier-pill.support{background:#FF6B6B15;border:1px solid #FF6B6B33;color:var(--support)}
+.tier-pill.standard{background:#F5C84215;border:1px solid #F5C84233;color:var(--standard)}
+.tier-pill.interest{background:#4BCC7A15;border:1px solid #4BCC7A33;color:var(--interest)}
+
+.mentor-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.mentor-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface2);border-radius:6px;padding:8px 12px;font-size:12px;
+}
+.mentor-row .mn{flex:1;font-weight:500}
+.mentor-row .cap-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.mentor-row .cap-fill{height:100%;background:var(--accent);border-radius:3px}
+.mentor-row .mc{color:var(--muted);font-family:var(--mono);white-space:nowrap}
+
+/* Server status */
+.server-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:12px;padding:5px 12px;border-radius:99px;
+  border:1px solid var(--border);background:var(--surface2);
+  margin-bottom:24px;
+}
+.dot{width:7px;height:7px;border-radius:50%}
+.dot.green{background:var(--interest);box-shadow:0 0 6px var(--interest)}
+.dot.red{background:var(--support)}
+.dot.yellow{background:var(--standard);animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.error-box{
+  background:#FF6B6B15;border:1px solid #FF6B6B44;
+  border-radius:8px;padding:14px;font-size:13px;color:var(--support);
+  margin-top:14px;display:none;line-height:1.6;
+}
+</style>
+</head>
+<body>
+
+<h1>Mentorship Matcher</h1>
+<p class="tagline">Upload your dataset → get assignments.xlsx instantly</p>
+
+<!-- Server status badge -->
+<div class="server-badge">
+  <div class="dot yellow" id="status-dot"></div>
+  <span id="status-text">Connecting to server…</span>
+</div>
+
+<!-- Upload card -->
+<div class="card">
+  <h2>1 · Upload Data</h2>
+
+  <div class="upload-row">
+    <!-- Single file -->
+    <div class="zone" id="zone-single" ondragover="drag(event,'zone-single')"
+         ondragleave="undrag('zone-single')" ondrop="drop(event,'single')">
+      <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'single')"/>
+      <div class="icon">📊</div>
+      <div class="ztitle" id="single-label">Combined file</div>
+      <div class="zsub">mentors + students<br>in one file</div>
+    </div>
+
+    <div style="display:flex;align-items:center;color:var(--muted);font-size:12px;flex-shrink:0">or</div>
+
+    <!-- Two files -->
+    <div style="flex:2;display:flex;flex-direction:column;gap:8px">
+      <div class="zone" id="zone-mentor" ondragover="drag(event,'zone-mentor')"
+           ondragleave="undrag('zone-mentor')" ondrop="drop(event,'mentor')">
+        <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'mentor')"/>
+        <div class="icon" style="font-size:18px">👨‍🏫</div>
+        <div class="ztitle" id="mentor-label">Mentor file</div>
+        <div class="zsub">separate mentors file</div>
+      </div>
+      <div class="zone" id="zone-student" ondragover="drag(event,'zone-student')"
+           ondragleave="undrag('zone-student')" ondrop="drop(event,'student')">
+        <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'student')"/>
+        <div class="icon" style="font-size:18px">🎓</div>
+        <div class="ztitle" id="student-label">Student file</div>
+        <div class="zsub">separate students file</div>
+      </div>
+    </div>
+  </div>
+  <p class="zone-note">Supports .xlsx and .csv — any column names, auto-detected</p>
+
+  <h2 style="margin-top:4px">2 · Options</h2>
+  <div class="opt-row">
+    <label>Mentor capacity</label>
+    <input type="number" id="capacity" value="10" min="1" max="500"/>
+    <span class="hint">max students per mentor<br>(overridden by Max_Mentees column)</span>
+  </div>
+
+  <h2 style="margin-top:4px">3 · Run</h2>
+  <button class="btn btn-primary" id="run-btn" onclick="runMatcher()" disabled>
+    <span id="btn-icon">⚡</span>
+    <span id="btn-text">Run Matcher</span>
+  </button>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-steps">
+      <div class="step" id="step-0"><div class="step-dot"></div>Uploading files…</div>
+      <div class="step" id="step-1"><div class="step-dot"></div>Inspecting columns…</div>
+      <div class="step" id="step-2"><div class="step-dot"></div>Mapping schema…</div>
+      <div class="step" id="step-3"><div class="step-dot"></div>Scoring all pairs…</div>
+      <div class="step" id="step-4"><div class="step-dot"></div>Solving assignments…</div>
+      <div class="step" id="step-5"><div class="step-dot"></div>Generating Excel…</div>
+    </div>
+  </div>
+
+  <div class="error-box" id="error-box"></div>
+</div>
+
+<!-- Results card -->
+<div class="card" id="results">
+  <h2>Results</h2>
+  <div class="stat-row" id="stat-row"></div>
+  <div class="tier-row" id="tier-row"></div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Mentor load</div>
+  <div class="mentor-list" id="mentor-list"></div>
+  <button class="btn btn-primary" onclick="downloadFile()">
+    ⬇ Download assignments.xlsx
+  </button>
+  <button class="btn btn-ghost" onclick="resetUI()">Run again with different files</button>
+</div>
+
+<script>
+const API = 'http://localhost:5000';
+let FILES = {single:null, mentor:null, student:null};
+let LAST_BLOB = null;
+let stepTimer = null;
+
+// ── Server status check ───────────────────────────────────────
+async function checkServer(){
+  try{
+    const r = await fetch(`${API}/status`, {signal: AbortSignal.timeout(3000)});
+    const d = await r.json();
+    if(d.ok){
+      document.getElementById('status-dot').className='dot green';
+      document.getElementById('status-text').textContent='Server ready';
+    }
+  } catch(e){
+    document.getElementById('status-dot').className='dot red';
+    document.getElementById('status-text').textContent=
+      'Server not running — start it with: python server.py';
+  }
+}
+checkServer();
+setInterval(checkServer, 8000);
+
+// ── File handling ─────────────────────────────────────────────
+function fileChosen(e, slot){
+  const f = e.target.files[0];
+  if(!f) return;
+  FILES[slot] = f;
+  const label = slot==='single'?'single-label':slot+'-label';
+  document.getElementById(label).textContent = f.name;
+  document.getElementById('zone-'+(slot==='single'?'single':slot)).classList.add('loaded');
+  updateRunBtn();
+}
+function drag(e, id){e.preventDefault();document.getElementById(id).classList.add('drag')}
+function undrag(id){document.getElementById(id).classList.remove('drag')}
+function drop(e, slot){
+  e.preventDefault(); undrag('zone-'+(slot==='single'?'single':slot));
+  const f = e.dataTransfer.files[0]; if(!f) return;
+  FILES[slot]=f;
+  const label = slot==='single'?'single-label':slot+'-label';
+  document.getElementById(label).textContent=f.name;
+  document.getElementById('zone-'+(slot==='single'?'single':slot)).classList.add('loaded');
+  updateRunBtn();
+}
+function updateRunBtn(){
+  const ready = FILES.single || FILES.mentor;
+  document.getElementById('run-btn').disabled = !ready;
+}
+
+// ── Step animation ────────────────────────────────────────────
+let stepIdx = 0;
+const STEP_DELAYS = [400, 800, 1200, 2000, 1500, 800];
+
+function startSteps(){
+  stepIdx = 0;
+  document.querySelectorAll('.step').forEach(s=>{
+    s.className='step';
+    s.querySelector('.step-dot').style.background='var(--border)';
+  });
+  document.getElementById('progress-fill').style.width='0%';
+  advanceStep();
+}
+
+function advanceStep(){
+  if(stepIdx>0){
+    const prev = document.getElementById(`step-${stepIdx-1}`);
+    prev.className='step done';
+  }
+  if(stepIdx < 6){
+    const cur = document.getElementById(`step-${stepIdx}`);
+    cur.className='step active';
+    const pct = Math.round((stepIdx/6)*100);
+    document.getElementById('progress-fill').style.width=pct+'%';
+    stepTimer = setTimeout(()=>{stepIdx++;advanceStep();}, STEP_DELAYS[stepIdx]||800);
+  }
+}
+
+function finishSteps(){
+  clearTimeout(stepTimer);
+  document.querySelectorAll('.step').forEach(s=>s.className='step done');
+  document.getElementById('progress-fill').style.width='100%';
+}
+
+// ── Run pipeline ──────────────────────────────────────────────
+async function runMatcher(){
+  hideError();
+  document.getElementById('results').style.display='none';
+  document.getElementById('progress-wrap').style.display='block';
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('btn-text').textContent='Running…';
+  startSteps();
+
+  const fd = new FormData();
+  const capacity = document.getElementById('capacity').value;
+  if(capacity) fd.append('capacity', capacity);
+
+  // Decide which file(s) to send
+  if(FILES.single && !FILES.mentor){
+    fd.append('mentor_file', FILES.single);
+  } else if(FILES.mentor){
+    fd.append('mentor_file', FILES.mentor);
+    if(FILES.student) fd.append('student_file', FILES.student);
+  }
+
+  try{
+    // First get a preview summary (fast, no download)
+    const fdPreview = new FormData();
+    for(let [k,v] of fd.entries()) fdPreview.append(k,v);
+    const prev = await fetch(`${API}/preview`, {method:'POST', body:fdPreview});
+    if(!prev.ok){
+      const err = await prev.json();
+      throw new Error(err.error || 'Preview failed');
+    }
+    const summary = await prev.json();
+
+    // Then get the actual file
+    const res = await fetch(`${API}/run`, {method:'POST', body:fd});
+    if(!res.ok){
+      const err = await res.json().catch(()=>({error:'Unknown server error'}));
+      throw new Error(err.error || 'Run failed');
+    }
+    LAST_BLOB = await res.blob();
+
+    finishSteps();
+    showResults(summary);
+
+  } catch(e){
+    clearTimeout(stepTimer);
+    document.getElementById('progress-wrap').style.display='none';
+    showError(e.message);
+    document.getElementById('run-btn').disabled=false;
+    document.getElementById('btn-text').textContent='Run Matcher';
+  }
+}
+
+// ── Results ───────────────────────────────────────────────────
+function showResults(s){
+  setTimeout(()=>{
+    document.getElementById('progress-wrap').style.display='none';
+    document.getElementById('btn-text').textContent='Run Matcher';
+
+    document.getElementById('stat-row').innerHTML=`
+      <div class="stat info"><div class="n">${s.total}</div><div class="l">Students</div></div>
+      <div class="stat good"><div class="n">${s.assigned}</div><div class="l">Assigned</div></div>
+      <div class="stat ${s.unassigned>0?'warn':'good'}"><div class="n">${s.unassigned}</div><div class="l">Unassigned</div></div>
+      <div class="stat info"><div class="n">${s.avg_score}</div><div class="l">Avg score/10</div></div>`;
+
+    document.getElementById('tier-row').innerHTML=`
+      <div class="tier-pill support"><div class="tn">${s.tiers.support||0}</div>Support</div>
+      <div class="tier-pill standard"><div class="tn">${s.tiers.standard||0}</div>Standard</div>
+      <div class="tier-pill interest"><div class="tn">${s.tiers.interest||0}</div>Interest</div>`;
+
+    const maxCap = Math.max(...Object.values(s.mentor_caps),1);
+    // Count assigned per mentor from summary
+    document.getElementById('mentor-list').innerHTML =
+      Object.entries(s.mentor_caps).map(([name,cap])=>`
+        <div class="mentor-row">
+          <span class="mn">${name}</span>
+          <div class="cap-wrap"><div class="cap-fill" style="width:${(cap/maxCap*100).toFixed(0)}%"></div></div>
+          <span class="mc">cap ${cap}</span>
+        </div>`).join('');
+
+    document.getElementById('results').style.display='block';
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});
+    window.location.href = "/dashboard";
+  }, 400);
+}
+
+function downloadFile(){
+  if(!LAST_BLOB) return;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(LAST_BLOB);
+  a.download = 'assignments.xlsx';
+  a.click();
+}
+
+function resetUI(){
+  FILES={single:null,mentor:null,student:null};
+  LAST_BLOB=null;
+  ['single','mentor','student'].forEach(s=>{
+    const lk = s==='single'?'single-label':s+'-label';
+    const zk = 'zone-'+(s==='single'?'single':s);
+    document.getElementById(lk).textContent=
+      s==='single'?'Combined file':s.charAt(0).toUpperCase()+s.slice(1)+' file';
+    document.getElementById(zk).classList.remove('loaded');
+  });
+  document.getElementById('results').style.display='none';
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('btn-text').textContent='Run Matcher';
+  hideError();
+}
+
+function showError(msg){
+  const b=document.getElementById('error-box');
+  b.style.display='block';
+  b.innerHTML=`<strong>Error:</strong> ${msg}<br>
+    <span style="font-size:11px;opacity:.7;margin-top:6px;display:block">
+    Make sure <code>server.py</code> is running: <code>python server.py</code></span>`;
+}
+function hideError(){document.getElementById('error-box').style.display='none'}
+</script>
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mentorship Matcher — Dashboard</title>
+<style>
+  /* ── Tokens ─────────────────────────────────────────────── */
+  :root{
+    --bg:       #0F1724;
+    --surface:  #1A2535;
+    --surface2: #212f42;
+    --border:   #2a3a52;
+    --text:     #E8EEF6;
+    --muted:    #7A8FA8;
+    --accent:   #4A9EFF;
+    --accent2:  #2D7DE0;
+    --support:  #FF6B6B;
+    --standard: #F5C842;
+    --interest: #4BCC7A;
+    --mono:     'Courier New', Courier, monospace;
+    --sans:     'Segoe UI', system-ui, sans-serif;
+    --radius:   8px;
+    --radius-sm:4px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);
+       min-height:100vh;display:flex;flex-direction:column}
+
+  /* ── Header ─────────────────────────────────────────────── */
+  header{
+    display:flex;align-items:center;gap:16px;
+    padding:14px 24px;
+    border-bottom:1px solid var(--border);
+    background:var(--surface);
+  }
+  header h1{font-size:16px;font-weight:600;letter-spacing:.3px}
+  header .sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .pill-tier{
+    font-size:11px;padding:2px 9px;border-radius:99px;
+    font-weight:600;letter-spacing:.4px;
+  }
+  .pill-support{background:#FF6B6B22;color:var(--support);border:1px solid #FF6B6B44}
+  .pill-standard{background:#F5C84222;color:var(--standard);border:1px solid #F5C84244}
+  .pill-interest{background:#4BCC7A22;color:var(--interest);border:1px solid #4BCC7A44}
+  .pill-unassigned{background:#ffffff11;color:var(--muted);border:1px solid var(--border)}
+
+  /* ── Layout ─────────────────────────────────────────────── */
+  .layout{display:flex;flex:1;overflow:hidden}
+  .sidebar{
+    width:260px;min-width:260px;
+    background:var(--surface);border-right:1px solid var(--border);
+    padding:20px 16px;display:flex;flex-direction:column;gap:20px;
+    overflow-y:auto;
+  }
+  .main{flex:1;overflow-y:auto;padding:24px}
+
+  /* ── Sidebar ─────────────────────────────────────────────── */
+  .sb-label{font-size:11px;font-weight:600;color:var(--muted);
+            letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+  .upload-zone{
+    border:1.5px dashed var(--border);border-radius:var(--radius);
+    padding:18px 12px;text-align:center;cursor:pointer;transition:.2s;
+    background:var(--bg);
+  }
+  .upload-zone:hover{border-color:var(--accent);background:#4A9EFF0A}
+  .upload-zone input{display:none}
+  .upload-zone .icon{font-size:24px;margin-bottom:6px}
+  .upload-zone p{font-size:12px;color:var(--muted);line-height:1.5}
+  .upload-zone strong{color:var(--accent);font-size:12px}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .stat-box{
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:var(--radius-sm);padding:10px 12px;
+  }
+  .stat-box .n{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--text)}
+  .stat-box .l{font-size:11px;color:var(--muted);margin-top:2px}
+
+  .filter-group{display:flex;flex-direction:column;gap:6px}
+  .filter-group label{font-size:12px;color:var(--muted)}
+  .filter-group select, .filter-group input[type=range]{
+    background:var(--bg);border:1px solid var(--border);
+    color:var(--text);border-radius:var(--radius-sm);
+    padding:6px 10px;font-size:12px;width:100%;outline:none;
+  }
+  .filter-group select:focus{border-color:var(--accent)}
+  input[type=range]{padding:4px 0;accent-color:var(--accent)}
+  .range-labels{display:flex;justify-content:space-between;
+                font-size:11px;color:var(--muted);margin-top:2px}
+
+  .btn{
+    width:100%;padding:9px;border-radius:var(--radius-sm);
+    border:none;font-size:13px;font-weight:600;cursor:pointer;
+    transition:.15s;
+  }
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:var(--accent2)}
+  .btn-ghost{background:transparent;color:var(--muted);
+             border:1px solid var(--border)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ── Tabs ─────────────────────────────────────────────────── */
+  .tabs{display:flex;gap:4px;margin-bottom:20px;
+        border-bottom:1px solid var(--border);padding-bottom:0}
+  .tab{
+    padding:8px 16px;font-size:13px;cursor:pointer;border:none;
+    background:transparent;color:var(--muted);border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+    border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s;
+  }
+  .tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+  .tab:hover{color:var(--text)}
+  .pnl{display:none}.pnl.on{display:block}
+
+  /* ── Table ─────────────────────────────────────────────────── */
+  .tbl-wrap{overflow-x:auto;border-radius:var(--radius);
+            border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{
+    background:var(--surface2);color:var(--muted);
+    font-size:11px;font-weight:600;letter-spacing:.5px;
+    text-transform:uppercase;padding:10px 14px;text-align:left;
+    cursor:pointer;user-select:none;white-space:nowrap;
+  }
+  th:hover{color:var(--text)}
+  th .sort-icon{margin-left:4px;opacity:.4}
+  th.sorted .sort-icon{opacity:1;color:var(--accent)}
+  td{
+    padding:10px 14px;border-top:1px solid var(--border);
+    vertical-align:middle;
+  }
+  tr:hover td{background:#ffffff04}
+  .mono{font-family:var(--mono);font-size:12px}
+  .score-cell{display:flex;align-items:center;gap:8px}
+  .score-bar-wrap{flex:1;height:5px;background:var(--border);
+                  border-radius:3px;overflow:hidden;min-width:40px}
+  .score-bar{height:100%;border-radius:3px;transition:.3s}
+  .reason-cell{font-size:11px;color:var(--muted);max-width:280px;
+               line-height:1.5;word-break:break-word}
+  .chip{
+    display:inline-block;font-size:10px;padding:1px 7px;
+    border-radius:99px;margin:1px;background:var(--surface2);
+    color:var(--muted);border:1px solid var(--border);
+  }
+  .chip-skill{background:#4A9EFF15;color:#7EC3FF;border-color:#4A9EFF33}
+  .empty-row td{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+
+  /* ── Summary cards ──────────────────────────────────────────── */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:24px}
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:16px;
+  }
+  .card .mentor-name{font-weight:500;font-size:14px;margin-bottom:4px}
+  .card .mentor-track{font-size:11px;color:var(--muted);margin-bottom:10px}
+  .card .cap-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin:6px 0}
+  .card .cap-fill{height:100%;border-radius:3px;background:var(--accent);transition:.4s}
+  .card .cap-label{font-size:11px;color:var(--muted);display:flex;justify-content:space-between}
+
+  /* ── Heatmap ────────────────────────────────────────────────── */
+  .heatmap-wrap{overflow-x:auto}
+  .heatmap-table{border-collapse:collapse;font-size:11px}
+  .heatmap-table th{
+    padding:6px 10px;background:var(--surface2);color:var(--muted);
+    font-weight:500;letter-spacing:.3px;text-transform:none;
+    white-space:nowrap;border:1px solid var(--border);
+  }
+  .heatmap-table td{
+    width:52px;height:32px;text-align:center;border:1px solid var(--border);
+    font-family:var(--mono);font-size:11px;font-weight:500;
+    cursor:pointer;transition:.15s;
+  }
+  .heatmap-table td:hover{outline:2px solid var(--accent);outline-offset:-2px}
+  .hm-label{
+    padding:6px 10px;background:var(--surface2);color:var(--text);
+    white-space:nowrap;font-size:11px;border:1px solid var(--border);
+  }
+  .legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--muted)}
+  .legend-grad{
+    width:120px;height:10px;border-radius:3px;
+    background:linear-gradient(to right,#1a2535,#4A9EFF,#4BCC7A);
+  }
+
+  /* ── Detail panel ────────────────────────────────────────────── */
+  .detail-panel{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:16px;margin-bottom:20px;
+    display:none;
+  }
+  .detail-panel.show{display:block}
+  .detail-panel h3{font-size:14px;font-weight:500;margin-bottom:12px;
+                   display:flex;justify-content:space-between;align-items:center}
+  .close-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+  .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .detail-block{background:var(--bg);border-radius:var(--radius-sm);padding:12px}
+  .detail-block .dl{font-size:11px;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+  .detail-block .dv{font-size:13px;line-height:1.5}
+  .bar-row{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:12px}
+  .bar-row .feature{width:110px;color:var(--muted);white-space:nowrap}
+  .bar-row .bwrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+  .bar-row .bfill{height:100%;border-radius:3px;background:var(--accent)}
+  .bar-row .bval{width:30px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+  /* ── Unassigned tab ─────────────────────────────────────────── */
+  .ua-card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;
+    opacity:.8;
+  }
+  .ua-card h4{font-size:13px;font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .ua-card p{font-size:12px;color:var(--muted);line-height:1.6}
+
+  /* ── Toast ──────────────────────────────────────────────────── */
+  #toast{
+    position:fixed;bottom:20px;right:20px;
+    background:var(--surface2);border:1px solid var(--border);
+    color:var(--text);padding:10px 16px;border-radius:var(--radius);
+    font-size:13px;opacity:0;transition:.3s;pointer-events:none;
+    box-shadow:0 4px 20px #0008;
+  }
+  #toast.show{opacity:1}
+
+  /* ── Scrollbar ──────────────────────────────────────────────── */
+  ::-webkit-scrollbar{width:6px;height:6px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Mentorship Matcher</h1>
+    <div class="sub" id="header-sub">Load your assignments.xlsx to get started</div>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center" id="header-stats" style="display:none"></div>
+</header>
+
+<div class="layout">
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+    <div>
+      <div class="sb-label">Data File</div>
+      <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" accept=".xlsx,.csv" onchange="handleFile(event)"/>
+        <div class="icon">📂</div>
+        <p>Drop or click to load<br><strong>assignments.xlsx</strong></p>
+      </div>
+    </div>
+
+    <div id="stats-section" style="display:none">
+      <div class="sb-label">Overview</div>
+      <div class="stat-grid" id="stat-grid"></div>
+    </div>
+
+    <div id="filter-section" style="display:none">
+      <div class="sb-label">Filters</div>
+      <div class="filter-group">
+        <label>Tier</label>
+        <select id="f-tier" onchange="applyFilters()">
+          <option value="">All tiers</option>
+          <option value="SUPPORT">🔴 Support</option>
+          <option value="STANDARD">🟡 Standard</option>
+          <option value="INTEREST">🟢 Interest</option>
+        </select>
+      </div>
+      <div class="filter-group" style="margin-top:10px">
+        <label>Mentor</label>
+        <select id="f-mentor" onchange="applyFilters()"></select>
+      </div>
+      <div class="filter-group" style="margin-top:10px">
+        <label>Min score: <span id="score-label">1</span></label>
+        <input type="range" id="f-score" min="1" max="10" step="0.1" value="1"
+               oninput="document.getElementById('score-label').textContent=parseFloat(this.value).toFixed(1);applyFilters()"/>
+        <div class="range-labels"><span>1</span><span>10</span></div>
+      </div>
+      <div class="filter-group" style="margin-top:10px">
+        <label>Search student</label>
+        <input type="text" placeholder="Name or ID…" id="f-search"
+               oninput="applyFilters()"
+               style="background:var(--bg);border:1px solid var(--border);color:var(--text);
+                      border-radius:var(--radius-sm);padding:6px 10px;font-size:12px;width:100%;outline:none"/>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:10px" onclick="resetFilters()">Reset filters</button>
+    </div>
+
+    <div id="export-section" style="display:none">
+      <div class="sb-label">Export</div>
+      <button class="btn btn-primary" onclick="exportCSV()">Download filtered CSV</button>
+    </div>
+  </div>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <!-- Empty state -->
+    <div id="empty-state" style="display:flex;flex-direction:column;align-items:center;
+         justify-content:center;height:60vh;gap:12px;color:var(--muted);text-align:center">
+      <div style="font-size:48px">📊</div>
+      <div style="font-size:16px;color:var(--text)">No data loaded</div>
+      <div style="font-size:13px;max-width:320px;line-height:1.6">
+        Load your <code style="background:var(--surface2);padding:1px 6px;border-radius:3px">assignments.xlsx</code>
+        from the sidebar.<br>The file is created by running <code style="background:var(--surface2);padding:1px 6px;border-radius:3px">run_matcher.py</code>.
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div id="content" style="display:none">
+      <div class="detail-panel" id="detail-panel">
+        <h3 id="detail-title">Student detail
+          <button class="close-btn" onclick="closeDetail()">×</button>
+        </h3>
+        <div class="detail-grid" id="detail-body"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab on" onclick="showTab('assignments')">Assignments</button>
+        <button class="tab" onclick="showTab('unassigned')">Unassigned <span id="ua-count"></span></button>
+        <button class="tab" onclick="showTab('mentors')">Mentor Load</button>
+        <button class="tab" onclick="showTab('heatmap')">Score Map</button>
+      </div>
+
+      <!-- Assignments tab -->
+      <div class="pnl on" id="tab-assignments">
+        <div class="tbl-wrap">
+          <table id="assign-table">
+            <thead>
+              <tr>
+                <th onclick="sortTable('assign-table',0)" data-col="0">ID <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('assign-table',1)" data-col="1">Student <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('assign-table',2)" data-col="2">CGPA <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('assign-table',3)" data-col="3">Tier <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('assign-table',4)" data-col="4">Mentor <span class="sort-icon">↕</span></th>
+                <th onclick="sortTable('assign-table',5)" data-col="5">Score <span class="sort-icon">↕</span></th>
+                <th>Shared Skills</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="assign-body"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--muted)" id="row-count"></div>
+      </div>
+
+      <!-- Unassigned tab -->
+      <div class="pnl" id="tab-unassigned">
+        <div id="ua-body"></div>
+      </div>
+
+      <!-- Mentor load tab -->
+      <div class="pnl" id="tab-mentors">
+        <div class="cards" id="mentor-cards"></div>
+      </div>
+
+      <!-- Heatmap tab -->
+      <div class="pnl" id="tab-heatmap">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          Each cell shows the match score between a student and a mentor.
+          Click any cell to see the full breakdown. Assigned pairs are highlighted.
+        </p>
+        <div class="heatmap-wrap" id="heatmap-wrap"></div>
+        <div class="legend">
+          <span>Low</span>
+          <div class="legend-grad"></div>
+          <span>High</span>
+          <span style="margin-left:16px">■ assigned pair</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script src="/xlsx.full.min.js"></script>
+<script>
+// ── State ──────────────────────────────────────────────────────────
+let ALL_ROWS  = [];   // parsed Assignments sheet rows
+let UA_ROWS   = [];   // parsed Unassigned sheet rows
+let MENTORS   = {};   // mentor name → {assigned:[], avgScore, capacity}
+let FILTERED  = [];
+let SORT_COL  = -1;
+let SORT_ASC  = true;
+
+// Raw score matrix reconstructed from data (student → mentor → score)
+let SCORE_MAP = {};   // studentId → {mentorName → score}
+
+// ── File loading ─────────────────────────────────────────────────
+function handleFile(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ev => parseWorkbook(ev.target.result, f.name);
+  reader.readAsArrayBuffer(f.result || f);
+}
+
+// Support drag-and-drop on upload zone
+const zone = document.querySelector('.upload-zone');
+zone.addEventListener('dragover', e=>{e.preventDefault();zone.style.borderColor='var(--accent)'});
+zone.addEventListener('dragleave', ()=>zone.style.borderColor='');
+zone.addEventListener('drop', e=>{
+  e.preventDefault(); zone.style.borderColor='';
+  const f = e.dataTransfer.files[0];
+  if(f) { const reader=new FileReader();
+    reader.onload=ev=>parseWorkbook(ev.target.result,f.name);
+    reader.readAsArrayBuffer(f); }
+});
+
+// Also handle CSV directly
+function parseWorkbook(buffer, fname){
+  const wb = XLSX.read(buffer, {type:'array'});
+
+  // Try to find the Assignments sheet
+  const aSheet = wb.SheetNames.find(n=>n.toLowerCase().includes('assign')) || wb.SheetNames[0];
+  const uSheet = wb.SheetNames.find(n=>n.toLowerCase().includes('unassign'));
+  const mSheet = wb.SheetNames.find(n=>n.toLowerCase().includes('summar') || n.toLowerCase().includes('mentor'));
+
+  ALL_ROWS = XLSX.utils.sheet_to_json(wb.Sheets[aSheet], {defval:''});
+  UA_ROWS  = uSheet ? XLSX.utils.sheet_to_json(wb.Sheets[uSheet],  {defval:''}) : [];
+  const mRows = mSheet ? XLSX.utils.sheet_to_json(wb.Sheets[mSheet], {defval:''}) : [];
+
+  if(!ALL_ROWS.length){ toast('No assignment rows found — check the file.'); return; }
+
+  buildMentorData(mRows);
+  buildScoreMap();
+  populateMentorFilter();
+  applyFilters();
+  renderUnassigned();
+  renderMentorCards();
+  renderHeatmap();
+  updateHeaderStats(fname);
+
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('content').style.display='block';
+  document.getElementById('stats-section').style.display='block';
+  document.getElementById('filter-section').style.display='block';
+  document.getElementById('export-section').style.display='block';
+  toast(`Loaded ${ALL_ROWS.length} assignments + ${UA_ROWS.length} unassigned`);
+}
+
+function buildMentorData(mRows){
+  MENTORS = {};
+  ALL_ROWS.forEach(r=>{
+    const mn = r['Mentor Name'] || r['Mentor'] || '';
+    if(!MENTORS[mn]) MENTORS[mn] = {assigned:[],scores:[],capacity:null,track:''};
+    MENTORS[mn].assigned.push(r);
+    const sc = parseFloat(r['Match Score']||r['Score']||0);
+    if(!isNaN(sc)) MENTORS[mn].scores.push(sc);
+  });
+  mRows.forEach(r=>{
+    const mn = r['Mentor Name']||r['Name']||'';
+    if(MENTORS[mn]){
+      MENTORS[mn].capacity = parseInt(r['Students Assigned']||0) || null;
+      MENTORS[mn].track    = r['Track']||'';
+    }
+  });
+}
+
+function buildScoreMap(){
+  // Heuristic: normalise existing scores per student to reconstruct relative ordering
+  // We store the real scores from the sheet for assigned pairs and estimate others
+  SCORE_MAP = {};
+  ALL_ROWS.forEach(r=>{
+    const sid = r['Student ID']||r['ID']||'';
+    const mn  = r['Mentor Name']||r['Mentor']||'';
+    const sc  = parseFloat(r['Match Score']||r['Score']||0);
+    if(!SCORE_MAP[sid]) SCORE_MAP[sid]={};
+    SCORE_MAP[sid][mn] = sc;
+  });
+}
+
+function populateMentorFilter(){
+  const sel = document.getElementById('f-mentor');
+  sel.innerHTML = '<option value="">All mentors</option>';
+  Object.keys(MENTORS).sort().forEach(mn=>{
+    const o = document.createElement('option');
+    o.value = mn; o.textContent = mn;
+    sel.appendChild(o);
+  });
+}
+
+function updateHeaderStats(fname){
+  document.getElementById('header-sub').textContent = fname;
+  const total = ALL_ROWS.length;
+  const ua    = UA_ROWS.length;
+  const scores= ALL_ROWS.map(r=>parseFloat(r['Match Score']||r['Score']||0)).filter(n=>!isNaN(n));
+  const avg   = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(2) : '—';
+  document.getElementById('stat-grid').innerHTML = `
+    <div class="stat-box"><div class="n">${total}</div><div class="l">Assigned</div></div>
+    <div class="stat-box"><div class="n">${ua}</div><div class="l">Unassigned</div></div>
+    <div class="stat-box"><div class="n">${avg}</div><div class="l">Avg score</div></div>
+    <div class="stat-box"><div class="n">${Object.keys(MENTORS).length}</div><div class="l">Mentors</div></div>`;
+  document.getElementById('ua-count').textContent = ua > 0 ? `(${ua})` : '';
+}
+
+// ── Filters & table rendering ─────────────────────────────────────
+function applyFilters(){
+  const tier   = document.getElementById('f-tier').value;
+  const mentor = document.getElementById('f-mentor').value;
+  const minSc  = parseFloat(document.getElementById('f-score').value);
+  const search = document.getElementById('f-search').value.toLowerCase();
+
+  FILTERED = ALL_ROWS.filter(r=>{
+    const t  = (r['Tier']||'').toUpperCase();
+    const mn = r['Mentor Name']||r['Mentor']||'';
+    const sc = parseFloat(r['Match Score']||r['Score']||0);
+    const nm = (r['Student Name']||r['Name']||'').toLowerCase();
+    const id = (r['Student ID']||r['ID']||'').toLowerCase();
+    if(tier   && t  !== tier)           return false;
+    if(mentor && mn !== mentor)         return false;
+    if(!isNaN(sc) && sc < minSc)       return false;
+    if(search && !nm.includes(search) && !id.includes(search)) return false;
+    return true;
+  });
+
+  renderTable();
+  document.getElementById('row-count').textContent =
+    `Showing ${FILTERED.length} of ${ALL_ROWS.length} students`;
+}
+
+function resetFilters(){
+  document.getElementById('f-tier').value='';
+  document.getElementById('f-mentor').value='';
+  document.getElementById('f-score').value=1;
+  document.getElementById('score-label').textContent='1';
+  document.getElementById('f-search').value='';
+  applyFilters();
+}
+
+function tierColor(t){
+  t=(t||'').toUpperCase();
+  if(t==='SUPPORT')  return 'var(--support)';
+  if(t==='STANDARD') return 'var(--standard)';
+  if(t==='INTEREST') return 'var(--interest)';
+  return 'var(--muted)';
+}
+function tierBg(t){
+  t=(t||'').toUpperCase();
+  if(t==='SUPPORT')  return '#FF6B6B22';
+  if(t==='STANDARD') return '#F5C84222';
+  if(t==='INTEREST') return '#4BCC7A22';
+  return 'transparent';
+}
+function scoreColor(sc){
+  if(sc>=8) return 'var(--interest)';
+  if(sc>=5) return 'var(--standard)';
+  return 'var(--support)';
+}
+
+function renderTable(){
+  const tbody = document.getElementById('assign-body');
+  if(!FILTERED.length){
+    tbody.innerHTML='<tr class="empty-row"><td colspan="8">No students match the current filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = FILTERED.map((r,i)=>{
+    const sid    = r['Student ID']||r['ID']||'';
+    const sname  = r['Student Name']||r['Name']||'';
+    const cgpa   = r['CGPA']||'';
+    const tier   = (r['Tier']||'').toUpperCase();
+    const mid    = r['Mentor ID']||'';
+    const mname  = r['Mentor Name']||r['Mentor']||'';
+    const sc     = parseFloat(r['Match Score']||r['Score']||0);
+    const shared = r['Shared Skills']||r['Shared']||'—';
+    const reason = r['Reason']||'';
+    const pct    = isNaN(sc)?0:(sc/10*100).toFixed(0);
+    const skills = shared==='—'?'<span style="color:var(--muted)">—</span>'
+      : shared.split(',').map(s=>`<span class="chip chip-skill">${s.trim()}</span>`).join('');
+
+    return `<tr onclick="showDetail(${i})" style="cursor:pointer">
+      <td class="mono" style="color:var(--muted)">${sid}</td>
+      <td style="font-weight:500">${sname}</td>
+      <td class="mono">${cgpa}</td>
+      <td><span class="pill-tier pill-${tier.toLowerCase()}">${tier}</span></td>
+      <td>${mname}</td>
+      <td><div class="score-cell">
+        <div class="score-bar-wrap"><div class="score-bar" style="width:${pct}%;background:${scoreColor(sc)}"></div></div>
+        <span class="mono" style="color:${scoreColor(sc)};min-width:36px">${isNaN(sc)?'—':sc.toFixed(2)}</span>
+      </div></td>
+      <td>${skills}</td>
+      <td class="reason-cell">${reason||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Detail panel ──────────────────────────────────────────────────
+function showDetail(i){
+  const r = FILTERED[i];
+  const sname = r['Student Name']||r['Name']||'';
+  const tier  = (r['Tier']||'').toUpperCase();
+  const mname = r['Mentor Name']||r['Mentor']||'';
+  const sc    = parseFloat(r['Match Score']||r['Score']||0);
+  const reason= r['Reason']||'';
+  const shared= r['Shared Skills']||'—';
+
+  document.getElementById('detail-title').innerHTML =
+    `<span>${sname} → ${mname}
+      <span class="pill-tier pill-${tier.toLowerCase()}" style="margin-left:8px">${tier}</span>
+    </span>
+    <button class="close-btn" onclick="closeDetail()">×</button>`;
+
+  // Feature breakdown from reason string
+  const features = parseReason(reason);
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="detail-block">
+      <div class="dl">Student</div>
+      <div class="dv">
+        <div><strong>${sname}</strong></div>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px">
+          CGPA: ${r['CGPA']||'—'} &nbsp;|&nbsp; Tier: ${tier}
+        </div>
+      </div>
+    </div>
+    <div class="detail-block">
+      <div class="dl">Mentor</div>
+      <div class="dv">
+        <div><strong>${mname}</strong></div>
+        <div style="color:var(--muted);font-size:12px;margin-top:4px">
+          Score: <span style="color:${scoreColor(sc)};font-family:var(--mono)">${isNaN(sc)?'—':sc.toFixed(2)}/10</span>
+        </div>
+      </div>
+    </div>
+    <div class="detail-block">
+      <div class="dl">Shared Skills</div>
+      <div class="dv">${shared==='—'?'<span style="color:var(--muted)">None</span>':
+        shared.split(',').map(s=>`<span class="chip chip-skill">${s.trim()}</span>`).join('')}
+      </div>
+    </div>
+    <div class="detail-block">
+      <div class="dl">Match signals</div>
+      <div class="dv">${features}</div>
+    </div>
+    <div class="detail-block" style="grid-column:1/-1">
+      <div class="dl">Reason</div>
+      <div class="dv" style="font-size:12px;color:var(--muted);line-height:1.6">${reason||'—'}</div>
+    </div>`;
+
+  const dp = document.getElementById('detail-panel');
+  dp.classList.add('show');
+  dp.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function parseReason(reason){
+  if(!reason) return '<span style="color:var(--muted)">No breakdown available.</span>';
+  const parts = reason.split('|').map(s=>s.trim()).filter(Boolean);
+  return parts.map(p=>{
+    // Try to extract a percentage
+    const pct = p.match(/(\d+)%/);
+    const val = pct ? parseInt(pct[1]) : 50;
+    return `<div class="bar-row">
+      <span class="feature">${p.replace(/\(.*?\)/,'').trim().slice(0,20)}</span>
+      <div class="bwrap"><div class="bfill" style="width:${val}%"></div></div>
+      <span class="bval">${pct?pct[0]:''}</span>
+    </div>`;
+  }).join('');
+}
+
+function closeDetail(){
+  document.getElementById('detail-panel').classList.remove('show');
+}
+
+// ── Unassigned tab ────────────────────────────────────────────────
+function renderUnassigned(){
+  const el = document.getElementById('ua-body');
+  if(!UA_ROWS.length){
+    el.innerHTML='<div style="color:var(--interest);background:#4BCC7A11;border:1px solid #4BCC7A33;border-radius:var(--radius);padding:16px;font-size:13px">✓ All students were successfully assigned.</div>';
+    return;
+  }
+  // Filter out the "All students assigned" message row
+  const real = UA_ROWS.filter(r=>{
+    const v = Object.values(r).join('');
+    return !v.toLowerCase().includes('all students were successfully');
+  });
+  if(!real.length){
+    el.innerHTML='<div style="color:var(--interest);background:#4BCC7A11;border:1px solid #4BCC7A33;border-radius:var(--radius);padding:16px;font-size:13px">✓ All students were successfully assigned.</div>';
+    return;
+  }
+  el.innerHTML = real.map(r=>{
+    const sid   = r['Student ID']||r['ID']||'';
+    const sname = r['Student Name']||r['Name']||'';
+    const cgpa  = r['CGPA']||'';
+    const tier  = (r['Tier']||'').toUpperCase();
+    const best  = r['Best Mentor (if capacity existed)']||r['Best Mentor']||'—';
+    const bsc   = r['Best Score']||'—';
+    const reason= r['Reason']||'All mentor capacities full.';
+    return `<div class="ua-card">
+      <h4>
+        <span class="mono" style="color:var(--muted)">${sid}</span>
+        ${sname}
+        <span class="pill-tier pill-${tier.toLowerCase()}">${tier}</span>
+        <span class="mono" style="color:var(--muted);font-size:11px">CGPA ${cgpa}</span>
+      </h4>
+      <p>Best match would have been <strong style="color:var(--text)">${best}</strong>
+         (score ${bsc}/10) — but capacity was full.<br>
+         ${reason}</p>
+    </div>`;
+  }).join('');
+}
+
+// ── Mentor cards tab ──────────────────────────────────────────────
+function renderMentorCards(){
+  const el = document.getElementById('mentor-cards');
+  const maxLoad = Math.max(...Object.values(MENTORS).map(m=>m.assigned.length),1);
+  el.innerHTML = Object.entries(MENTORS)
+    .sort((a,b)=>b[1].assigned.length - a[1].assigned.length)
+    .map(([name,data])=>{
+      const n   = data.assigned.length;
+      const avg = data.scores.length
+        ? (data.scores.reduce((a,b)=>a+b,0)/data.scores.length).toFixed(2) : '—';
+      const pct = (n/maxLoad*100).toFixed(0);
+      const tierBreak = {};
+      data.assigned.forEach(r=>{
+        const t=(r['Tier']||'').toUpperCase();
+        tierBreak[t]=(tierBreak[t]||0)+1;
+      });
+      const pills = Object.entries(tierBreak).map(([t,c])=>
+        `<span class="pill-tier pill-${t.toLowerCase()}">${t} ${c}</span>`).join(' ');
+      return `<div class="card">
+        <div class="mentor-name">${name}</div>
+        <div class="mentor-track" style="color:var(--muted)">${data.track||'—'}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">${pills}</div>
+        <div class="cap-bar"><div class="cap-fill" style="width:${pct}%"></div></div>
+        <div class="cap-label">
+          <span>${n} students</span>
+          <span>avg ${avg}/10</span>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────
+function renderHeatmap(){
+  const wrap = document.getElementById('heatmap-wrap');
+  if(!ALL_ROWS.length){wrap.innerHTML='';return;}
+
+  // Collect all unique student/mentor pairs that exist
+  const students = [...new Set(ALL_ROWS.map(r=>r['Student Name']||r['Name']||''))];
+  const mentors  = Object.keys(MENTORS);
+
+  // Build lookup: studentName → mentorName → score (assigned pairs only)
+  const lookup = {};
+  ALL_ROWS.forEach(r=>{
+    const s = r['Student Name']||r['Name']||'';
+    const m = r['Mentor Name']||r['Mentor']||'';
+    const sc= parseFloat(r['Match Score']||r['Score']||0);
+    lookup[s] = lookup[s]||{};
+    lookup[s][m] = {sc, assigned:true};
+  });
+
+  // Cap display at 20 students for readability
+  const disp = students.slice(0,20);
+  const allScores = ALL_ROWS.map(r=>parseFloat(r['Match Score']||r['Score']||0)).filter(n=>!isNaN(n));
+  const minSc = Math.min(...allScores), maxSc = Math.max(...allScores);
+
+  function heatColor(sc, assigned){
+    if(isNaN(sc)) return 'var(--surface2)';
+    const t = (sc-minSc)/(maxSc-minSc+0.01);
+    const r = Math.round(26 + t*(-26+75));
+    const g = Math.round(37 + t*(204-37));
+    const b = Math.round(53 + t*(122-53));
+    const base = `rgb(${r},${g},${b})`;
+    return assigned ? base : `rgba(${r},${g},${b},0.35)`;
+  }
+
+  let html = `<table class="heatmap-table"><thead><tr>
+    <th style="min-width:120px">Student \\ Mentor</th>
+    ${mentors.map(m=>`<th>${m.split(' ')[0]}</th>`).join('')}
+  </tr></thead><tbody>`;
+
+  disp.forEach(s=>{
+    html += `<tr><td class="hm-label">${s}</td>`;
+    mentors.forEach(m=>{
+      const cell = (lookup[s]||{})[m];
+      const sc   = cell ? cell.sc : NaN;
+      const asgn = cell ? cell.assigned : false;
+      const bg   = heatColor(sc, asgn);
+      const txt  = isNaN(sc)?'':sc.toFixed(1);
+      const border = asgn ? '2px solid var(--accent)' : '1px solid var(--border)';
+      html += `<td style="background:${bg};outline:${border};color:${asgn?'#fff':'rgba(255,255,255,.5)'}"
+                   title="${s} → ${m}: ${txt}/10${asgn?' (assigned)':''}"
+                   onclick="heatClick('${s.replace(/'/g,"\\'")}','${m.replace(/'/g,"\\'")}','${txt}')">
+                   ${txt}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  if(students.length>20) html += `<p style="font-size:11px;color:var(--muted);margin-top:8px">Showing first 20 of ${students.length} students.</p>`;
+  wrap.innerHTML = html;
+}
+
+function heatClick(student, mentor, score){
+  toast(`${student} → ${mentor}: ${score}/10`);
+  // Jump to assignments tab and filter by student
+  showTab('assignments');
+  document.getElementById('f-search').value = student;
+  applyFilters();
+}
+
+// ── Sort ──────────────────────────────────────────────────────────
+function sortTable(tableId, col){
+  if(SORT_COL===col) SORT_ASC=!SORT_ASC;
+  else {SORT_COL=col; SORT_ASC=true;}
+  document.querySelectorAll(`#${tableId} th`).forEach((th,i)=>{
+    th.classList.toggle('sorted',i===col);
+  });
+  FILTERED.sort((a,b)=>{
+    const keys = ['Student ID','Student Name','CGPA','Tier','Mentor Name','Match Score'];
+    const k = keys[col];
+    let va=a[k]||'', vb=b[k]||'';
+    const na=parseFloat(va), nb=parseFloat(vb);
+    if(!isNaN(na)&&!isNaN(nb)) return SORT_ASC?na-nb:nb-na;
+    return SORT_ASC?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+  renderTable();
+}
+
+// ── Tab switching ─────────────────────────────────────────────────
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    const ids=['assignments','unassigned','mentors','heatmap'];
+    t.classList.toggle('on',ids[i]===id);
+  });
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.getElementById(`tab-${id}`).classList.add('on');
+}
+
+// ── CSV Export ────────────────────────────────────────────────────
+function exportCSV(){
+  if(!FILTERED.length){toast('Nothing to export.');return;}
+  const keys = Object.keys(FILTERED[0]);
+  const rows = [keys.join(','),
+    ...FILTERED.map(r=>keys.map(k=>`"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))
+  ];
+  const blob = new Blob([rows.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='filtered_assignments.csv';
+  a.click();
+  toast(`Exported ${FILTERED.length} rows`);
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+
+window.onload = async () => {
+    try{
+        const res = await fetch("/latest");
+
+        if(!res.ok) return;
+
+        const buffer = await res.arrayBuffer();
+
+        parseWorkbook(buffer, "assignments.xlsx");
+
+    }catch(e){
+        console.log("No assignment file available yet");
+    }
+};
+</script>
+</body>
+</html>
+
