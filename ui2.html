@@ -10,412 +10,968 @@
   --border:#2a3a52;--text:#E8EEF6;--muted:#7A8FA8;
   --accent:#4A9EFF;--accent2:#2D7DE0;
   --support:#FF6B6B;--standard:#F5C842;--interest:#4BCC7A;
-  --radius:10px;--mono:'Courier New',monospace;
+  --radius:10px;--radius-sm:6px;
+  --mono:'Courier New',monospace;--sans:'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;
-     background:var(--bg);color:var(--text);min-height:100vh;
-     display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-h1{font-size:22px;font-weight:600;margin-bottom:4px}
-.tagline{font-size:13px;color:var(--muted);margin-bottom:36px}
-
-.card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:28px 32px;width:100%;max-width:600px;
-  margin-bottom:20px;
-}
-.card h2{font-size:14px;font-weight:600;color:var(--muted);
-          letter-spacing:.6px;text-transform:uppercase;margin-bottom:18px}
-
-/* Upload zones */
-.upload-row{display:flex;gap:12px;margin-bottom:6px}
-.zone{
-  flex:1;border:1.5px dashed var(--border);border-radius:var(--radius);
-  padding:20px 12px;text-align:center;cursor:pointer;transition:.2s;
-  background:var(--bg);position:relative;
-}
-.zone:hover,.zone.drag{border-color:var(--accent);background:#4A9EFF0A}
-.zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.zone .icon{font-size:26px;margin-bottom:6px}
-.zone .ztitle{font-size:13px;font-weight:500;margin-bottom:3px}
-.zone .zsub{font-size:11px;color:var(--muted)}
-.zone.loaded{border-color:var(--interest);border-style:solid}
-.zone.loaded .ztitle{color:var(--interest)}
-.zone-note{font-size:11px;color:var(--muted);text-align:center;margin-bottom:18px}
-
-/* Options */
-.opt-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:13px}
-.opt-row label{color:var(--muted);width:140px;flex-shrink:0}
-.opt-row input[type=number]{
-  background:var(--bg);border:1px solid var(--border);color:var(--text);
-  border-radius:6px;padding:6px 10px;font-size:13px;width:80px;outline:none
-}
-.opt-row input:focus{border-color:var(--accent)}
-.opt-row .hint{font-size:11px;color:var(--muted)}
-
-/* Button */
-.btn{
-  width:100%;padding:12px;border-radius:var(--radius);border:none;
-  font-size:14px;font-weight:600;cursor:pointer;transition:.15s;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover:not(:disabled){background:var(--accent2)}
-.btn-primary:disabled{opacity:.45;cursor:not-allowed}
-.btn-ghost{background:transparent;color:var(--accent);
-           border:1px solid var(--accent);margin-top:10px}
-.btn-ghost:hover{background:#4A9EFF11}
-
-/* Progress */
-.progress-wrap{margin-top:16px;display:none}
-.progress-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:8px}
-.progress-fill{height:100%;background:var(--accent);width:0;transition:.4s;border-radius:2px}
-.progress-steps{display:flex;flex-direction:column;gap:4px}
-.step{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}
-.step.done{color:var(--interest)}.step.active{color:var(--text)}
-.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0}
-.step.done .step-dot{background:var(--interest)}
-.step.active .step-dot{background:var(--accent);box-shadow:0 0 6px var(--accent)}
-
-/* Results */
-#results{display:none}
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
-.stat{background:var(--surface2);border-radius:8px;padding:14px;text-align:center}
-.stat .n{font-family:var(--mono);font-size:24px;font-weight:700}
-.stat .l{font-size:11px;color:var(--muted);margin-top:3px}
-.stat.good .n{color:var(--interest)}
-.stat.warn .n{color:var(--support)}
-.stat.info .n{color:var(--accent)}
-
-.tier-row{display:flex;gap:8px;margin-bottom:20px}
-.tier-pill{
-  flex:1;padding:10px;border-radius:8px;text-align:center;font-size:12px;
-}
-.tier-pill .tn{font-size:18px;font-weight:700;font-family:var(--mono)}
-.tier-pill.support{background:#FF6B6B15;border:1px solid #FF6B6B33;color:var(--support)}
-.tier-pill.standard{background:#F5C84215;border:1px solid #F5C84233;color:var(--standard)}
-.tier-pill.interest{background:#4BCC7A15;border:1px solid #4BCC7A33;color:var(--interest)}
-
-.mentor-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
-.mentor-row{
-  display:flex;align-items:center;gap:10px;
-  background:var(--surface2);border-radius:6px;padding:8px 12px;font-size:12px;
-}
-.mentor-row .mn{flex:1;font-weight:500}
-.mentor-row .cap-wrap{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-.mentor-row .cap-fill{height:100%;background:var(--accent);border-radius:3px}
-.mentor-row .mc{color:var(--muted);font-family:var(--mono);white-space:nowrap}
-
-/* Server status */
-.server-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:12px;padding:5px 12px;border-radius:99px;
-  border:1px solid var(--border);background:var(--surface2);
-  margin-bottom:24px;
-}
+/* ── Header ── */
+header{display:flex;align-items:center;gap:14px;padding:13px 24px;
+       border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+header h1{font-size:16px;font-weight:600}
+.server-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;
+  padding:4px 10px;border-radius:99px;border:1px solid var(--border);
+  background:var(--surface2);margin-left:auto}
 .dot{width:7px;height:7px;border-radius:50%}
-.dot.green{background:var(--interest);box-shadow:0 0 6px var(--interest)}
+.dot.green{background:var(--interest);box-shadow:0 0 5px var(--interest)}
 .dot.red{background:var(--support)}
 .dot.yellow{background:var(--standard);animation:pulse 1.2s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hdr-meta{font-size:12px;color:var(--muted)}
 
-.error-box{
-  background:#FF6B6B15;border:1px solid #FF6B6B44;
-  border-radius:8px;padding:14px;font-size:13px;color:var(--support);
-  margin-top:14px;display:none;line-height:1.6;
+/* ── Two-pane layout ── */
+.app{display:flex;flex:1;overflow:hidden}
+
+/* ── Left panel (runner) ── */
+.runner{
+  width:300px;min-width:300px;background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;
+  transition:width .35s ease,min-width .35s ease,opacity .3s;
 }
+.runner.collapsed{width:0;min-width:0;opacity:0;overflow:hidden}
+.runner-inner{padding:20px 16px;display:flex;flex-direction:column;gap:18px;min-width:268px}
+
+.sb-label{font-size:11px;font-weight:600;color:var(--muted);
+          letter-spacing:.7px;text-transform:uppercase;margin-bottom:8px}
+
+/* Upload zones */
+.zone{border:1.5px dashed var(--border);border-radius:var(--radius);
+      padding:16px 10px;text-align:center;cursor:pointer;transition:.2s;
+      background:var(--bg);position:relative;margin-bottom:8px}
+.zone:hover,.zone.drag{border-color:var(--accent);background:#4A9EFF0A}
+.zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.zone .zi{font-size:22px;margin-bottom:4px}
+.zone .zt{font-size:12px;font-weight:500;margin-bottom:2px}
+.zone .zs{font-size:11px;color:var(--muted)}
+.zone.loaded{border-style:solid;border-color:var(--interest)}
+.zone.loaded .zt{color:var(--interest)}
+.zone-or{text-align:center;font-size:11px;color:var(--muted);margin:4px 0}
+.mode-btn{
+  flex:1;padding:7px 10px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--bg);
+  color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;transition:.15s;
+}
+.mode-btn:hover{border-color:var(--accent);color:var(--text)}
+.mode-btn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Options */
+.opt{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:8px}
+.opt label{color:var(--muted);width:110px;flex-shrink:0}
+.opt input[type=number]{background:var(--bg);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);padding:5px 8px;
+  font-size:12px;width:70px;outline:none}
+.opt input:focus{border-color:var(--accent)}
+.opt .hint{font-size:10px;color:var(--muted);line-height:1.4}
+
+/* Buttons */
+.btn{width:100%;padding:10px;border-radius:var(--radius-sm);border:none;
+     font-size:13px;font-weight:600;cursor:pointer;transition:.15s;
+     display:flex;align-items:center;justify-content:center;gap:7px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover:not(:disabled){background:var(--accent2)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);margin-top:6px}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{width:auto;padding:5px 12px;font-size:12px}
+
+/* Progress */
+.prog-wrap{display:none;margin-top:4px}
+.prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.prog-fill{height:100%;background:var(--accent);width:0;transition:.4s;border-radius:2px}
+.step{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px;margin:4px 0}
+.step.done{color:var(--interest)}.step.active{color:var(--text)}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0}
+.step.done .sdot{background:var(--interest)}
+.step.active .sdot{background:var(--accent);box-shadow:0 0 5px var(--accent)}
+
+.err{background:#FF6B6B15;border:1px solid #FF6B6B44;border-radius:var(--radius-sm);
+     padding:12px;font-size:12px;color:var(--support);display:none;margin-top:10px;line-height:1.6}
+
+/* ── Divider / collapse toggle ── */
+.toggle-btn{
+  position:absolute;left:300px;top:50%;transform:translateY(-50%);
+  z-index:10;background:var(--surface2);border:1px solid var(--border);
+  border-radius:0 6px 6px 0;padding:8px 5px;cursor:pointer;
+  color:var(--muted);font-size:13px;transition:left .35s ease;
+  writing-mode:horizontal-tb;
+}
+.toggle-btn.collapsed{left:0}
+.toggle-btn:hover{color:var(--text)}
+
+/* ── Right panel (dashboard) ── */
+.dashboard{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* Empty / loading states */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+       height:100%;gap:12px;color:var(--muted);text-align:center;padding:40px}
+.empty .ei{font-size:48px}
+.empty h2{font-size:16px;color:var(--text)}
+.empty p{font-size:13px;max-width:320px;line-height:1.6}
+
+/* ── Sidebar + main (viewer layout) ── */
+.viewer{display:flex;flex:1;overflow:hidden}
+.vsidebar{width:220px;min-width:220px;background:var(--surface);
+          border-right:1px solid var(--border);padding:16px;
+          display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.vmain{flex:1;overflow-y:auto;padding:20px}
+
+/* Stat boxes */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.stat-box{background:var(--bg);border:1px solid var(--border);
+          border-radius:var(--radius-sm);padding:9px 11px}
+.stat-box .n{font-family:var(--mono);font-size:19px;font-weight:700}
+.stat-box .l{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* Filters */
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:11px;color:var(--muted)}
+.fg select,.fg input[type=range]{background:var(--bg);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);padding:5px 8px;
+  font-size:12px;width:100%;outline:none}
+.fg select:focus{border-color:var(--accent)}
+input[type=range]{padding:3px 0;accent-color:var(--accent)}
+.rl{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:1px}
+.fg input[type=text]{background:var(--bg);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);padding:5px 8px;
+  font-size:12px;width:100%;outline:none}
+.fg input[type=text]:focus{border-color:var(--accent)}
+
+/* Tabs */
+.tabs{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:7px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;
+     color:var(--muted);border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+     border-bottom:2px solid transparent;margin-bottom:-1px;transition:.15s}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.tab:hover{color:var(--text)}
+.pnl{display:none}.pnl.on{display:block}
+
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface2);color:var(--muted);font-size:11px;font-weight:600;
+   letter-spacing:.5px;text-transform:uppercase;padding:9px 13px;text-align:left;
+   cursor:pointer;user-select:none;white-space:nowrap}
+th:hover{color:var(--text)}
+th .si{margin-left:3px;opacity:.4}
+th.sorted .si{opacity:1;color:var(--accent)}
+td{padding:9px 13px;border-top:1px solid var(--border);vertical-align:middle}
+tr:hover td{background:#ffffff04}
+.mono{font-family:var(--mono);font-size:12px}
+.sc-cell{display:flex;align-items:center;gap:7px}
+.sc-bar{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:36px}
+.sc-fill{height:100%;border-radius:3px;transition:.3s}
+.rc{font-size:11px;color:var(--muted);max-width:260px;line-height:1.5;word-break:break-word}
+.chip{display:inline-block;font-size:10px;padding:1px 6px;border-radius:99px;margin:1px;
+      background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.chip-s{background:#4A9EFF15;color:#7EC3FF;border-color:#4A9EFF33}
+.erow td{text-align:center;padding:36px;color:var(--muted);font-size:13px}
+
+/* Pills */
+.pt{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:600;letter-spacing:.4px}
+.pt-support{background:#FF6B6B22;color:var(--support);border:1px solid #FF6B6B44}
+.pt-standard{background:#F5C84222;color:var(--standard);border:1px solid #F5C84244}
+.pt-interest{background:#4BCC7A22;color:var(--interest);border:1px solid #4BCC7A44}
+.pt-unassigned{background:#ffffff11;color:var(--muted);border:1px solid var(--border)}
+
+/* Detail panel */
+.dp{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:14px;margin-bottom:16px;display:none}
+.dp.show{display:block}
+.dp h3{font-size:14px;font-weight:500;margin-bottom:10px;
+        display:flex;justify-content:space-between;align-items:center}
+.xbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.db{background:var(--bg);border-radius:var(--radius-sm);padding:10px}
+.db .dl{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px}
+.db .dv{font-size:13px;line-height:1.5}
+.br{display:flex;align-items:center;gap:7px;margin:3px 0;font-size:12px}
+.br .bf{width:100px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.br .bw{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.br .bfi{height:100%;border-radius:3px;background:var(--accent)}
+.br .bv{width:28px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--muted)}
+
+/* Mentor cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.card .mn{font-weight:500;font-size:13px;margin-bottom:3px}
+.card .mt{font-size:11px;color:var(--muted);margin-bottom:8px}
+.card .cb{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin:5px 0}
+.card .cf{height:100%;border-radius:3px;background:var(--accent);transition:.4s}
+.card .cl{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
+
+/* Heatmap */
+.hm-wrap{overflow-x:auto}
+.hmt{border-collapse:collapse;font-size:11px}
+.hmt th{padding:5px 9px;background:var(--surface2);color:var(--muted);
+        font-weight:500;white-space:nowrap;border:1px solid var(--border)}
+.hmt td{width:50px;height:30px;text-align:center;border:1px solid var(--border);
+        font-family:var(--mono);font-size:11px;font-weight:500;cursor:pointer;transition:.15s}
+.hmt td:hover{outline:2px solid var(--accent);outline-offset:-2px}
+.hm-lbl{padding:5px 9px;background:var(--surface2);color:var(--text);
+         white-space:nowrap;font-size:11px;border:1px solid var(--border)}
+.legend{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--muted)}
+.lg{width:110px;height:8px;border-radius:3px;
+    background:linear-gradient(to right,#1a2535,#4A9EFF,#4BCC7A)}
+
+/* Unassigned */
+.ua-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+         padding:12px 14px;margin-bottom:8px;opacity:.8}
+.ua-card h4{font-size:13px;font-weight:500;margin-bottom:3px;display:flex;align-items:center;gap:7px}
+.ua-card p{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* Toast */
+#toast{position:fixed;bottom:20px;right:20px;background:var(--surface2);
+       border:1px solid var(--border);color:var(--text);padding:9px 14px;
+       border-radius:var(--radius);font-size:13px;opacity:0;transition:.3s;
+       pointer-events:none;box-shadow:0 4px 20px #0008;z-index:999}
+#toast.show{opacity:1}
+
+/* Download bar */
+.dl-bar{display:none;background:var(--surface2);border-top:1px solid var(--border);
+        padding:10px 20px;flex-shrink:0;align-items:center;gap:12px;font-size:13px}
+.dl-bar.show{display:flex}
 </style>
 </head>
 <body>
 
-<h1>Mentorship Matcher</h1>
-<p class="tagline">Upload your dataset → get assignments.xlsx instantly</p>
+<!-- ── Header ── -->
+<header>
+  <h1>⚡ Mentorship Matcher</h1>
+  <span class="hdr-meta" id="hdr-meta">Upload your data to get started</span>
+  <div class="server-badge">
+    <div class="dot yellow" id="sdot"></div>
+    <span id="stxt">Connecting…</span>
+  </div>
+</header>
 
-<!-- Server status badge -->
-<div class="server-badge">
-  <div class="dot yellow" id="status-dot"></div>
-  <span id="status-text">Connecting to server…</span>
-</div>
+<!-- ── App shell ── -->
+<div class="app" style="position:relative">
 
-<!-- Upload card -->
-<div class="card">
-  <h2>1 · Upload Data</h2>
+  <!-- Collapse toggle -->
+  <button class="toggle-btn" id="toggle-btn" title="Toggle panel" onclick="toggleRunner()">◀</button>
 
-  <div class="upload-row">
-    <!-- Single file -->
-    <div class="zone" id="zone-single" ondragover="drag(event,'zone-single')"
-         ondragleave="undrag('zone-single')" ondrop="drop(event,'single')">
-      <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'single')"/>
-      <div class="icon">📊</div>
-      <div class="ztitle" id="single-label">Combined file</div>
-      <div class="zsub">mentors + students<br>in one file</div>
-    </div>
+  <!-- ── LEFT: Runner ── -->
+  <div class="runner" id="runner">
+    <div class="runner-inner">
 
-    <div style="display:flex;align-items:center;color:var(--muted);font-size:12px;flex-shrink:0">or</div>
+      <div>
+        <div class="sb-label">1 · Upload Data</div>
 
-    <!-- Two files -->
-    <div style="flex:2;display:flex;flex-direction:column;gap:8px">
-      <div class="zone" id="zone-mentor" ondragover="drag(event,'zone-mentor')"
-           ondragleave="undrag('zone-mentor')" ondrop="drop(event,'mentor')">
-        <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'mentor')"/>
-        <div class="icon" style="font-size:18px">👨‍🏫</div>
-        <div class="ztitle" id="mentor-label">Mentor file</div>
-        <div class="zsub">separate mentors file</div>
+        <!-- Mode toggle -->
+        <div style="display:flex;gap:6px;margin-bottom:12px">
+          <button class="mode-btn on" id="mode-combined" onclick="setMode('combined')">Combined file</button>
+          <button class="mode-btn" id="mode-separate" onclick="setMode('separate')">Separate files</button>
+        </div>
+
+        <!-- Combined mode -->
+        <div id="panel-combined">
+          <div class="zone" id="z-single" ondragover="dg(event,'z-single')"
+               ondragleave="dug('z-single')" ondrop="dp(event,'single')">
+            <input type="file" accept=".xlsx,.csv" onchange="fc(event,'single')"/>
+            <div class="zi">📊</div>
+            <div class="zt" id="l-single">Click or drag file here</div>
+            <div class="zs">mentors + students in one file</div>
+          </div>
+        </div>
+
+        <!-- Separate mode -->
+        <div id="panel-separate" style="display:none">
+          <div class="zone" id="z-mentor" ondragover="dg(event,'z-mentor')"
+               ondragleave="dug('z-mentor')" ondrop="dp(event,'mentor')">
+            <input type="file" accept=".xlsx,.csv" onchange="fc(event,'mentor')"/>
+            <div class="zi" style="font-size:17px">👨‍🏫</div>
+            <div class="zt" id="l-mentor">Mentor file</div>
+            <div class="zs">mentors sheet / CSV</div>
+          </div>
+          <div class="zone" id="z-student" ondragover="dg(event,'z-student')"
+               ondragleave="dug('z-student')" ondrop="dp(event,'student')">
+            <input type="file" accept=".xlsx,.csv" onchange="fc(event,'student')"/>
+            <div class="zi" style="font-size:17px">🎓</div>
+            <div class="zt" id="l-student">Student file</div>
+            <div class="zs">students sheet / CSV</div>
+          </div>
+        </div>
       </div>
-      <div class="zone" id="zone-student" ondragover="drag(event,'zone-student')"
-           ondragleave="undrag('zone-student')" ondrop="drop(event,'student')">
-        <input type="file" accept=".xlsx,.csv" onchange="fileChosen(event,'student')"/>
-        <div class="icon" style="font-size:18px">🎓</div>
-        <div class="ztitle" id="student-label">Student file</div>
-        <div class="zsub">separate students file</div>
+
+      <div>
+        <div class="sb-label">2 · Options</div>
+        <div class="opt">
+          <label>Capacity</label>
+          <input type="number" id="capacity" value="10" min="1" max="999"/>
+          <span class="hint">per mentor<br>(overridden by<br>Max_Mentees col)</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sb-label">3 · Run</div>
+        <button class="btn btn-primary" id="run-btn" onclick="runMatcher()" disabled>
+          <span id="btn-icon">⚡</span><span id="btn-txt">Run Matcher</span>
+        </button>
+        <div class="prog-wrap" id="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+          <div id="steps">
+            <div class="step" id="s0"><div class="sdot"></div>Uploading files…</div>
+            <div class="step" id="s1"><div class="sdot"></div>Inspecting columns…</div>
+            <div class="step" id="s2"><div class="sdot"></div>Mapping schema…</div>
+            <div class="step" id="s3"><div class="sdot"></div>Scoring all pairs…</div>
+            <div class="step" id="s4"><div class="sdot"></div>Solving assignments…</div>
+            <div class="step" id="s5"><div class="sdot"></div>Generating Excel…</div>
+          </div>
+        </div>
+        <div class="err" id="err-box"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RIGHT: Dashboard ── -->
+  <div class="dashboard" id="dashboard">
+
+    <!-- Empty state -->
+    <div class="empty" id="empty-state">
+      <div class="ei">📊</div>
+      <h2>No results yet</h2>
+      <p>Upload your dataset on the left and click <strong>Run Matcher</strong>.
+         Results will appear here instantly.</p>
+    </div>
+
+    <!-- Viewer (hidden until results load) -->
+    <div class="viewer" id="viewer" style="display:none">
+
+      <!-- Viewer sidebar: stats + filters -->
+      <div class="vsidebar">
+        <div>
+          <div class="sb-label">Overview</div>
+          <div class="stat-grid" id="stat-grid"></div>
+        </div>
+        <div>
+          <div class="sb-label">Filters</div>
+          <div class="fg">
+            <label>Tier</label>
+            <select id="f-tier" onchange="applyFilters()">
+              <option value="">All tiers</option>
+              <option value="SUPPORT">🔴 Support</option>
+              <option value="STANDARD">🟡 Standard</option>
+              <option value="INTEREST">🟢 Interest</option>
+            </select>
+          </div>
+          <div class="fg" style="margin-top:8px">
+            <label>Mentor</label>
+            <select id="f-mentor" onchange="applyFilters()"></select>
+          </div>
+          <div class="fg" style="margin-top:8px">
+            <label>Min score: <span id="sc-lbl">1</span></label>
+            <input type="range" id="f-score" min="1" max="10" step="0.1" value="1"
+                   oninput="document.getElementById('sc-lbl').textContent=parseFloat(this.value).toFixed(1);applyFilters()"/>
+            <div class="rl"><span>1</span><span>10</span></div>
+          </div>
+          <div class="fg" style="margin-top:8px">
+            <label>Search</label>
+            <input type="text" id="f-search" placeholder="Name or ID…" oninput="applyFilters()"/>
+          </div>
+          <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="resetFilters()">Reset</button>
+        </div>
+        <div>
+          <div class="sb-label">Export</div>
+          <button class="btn btn-primary btn-sm" style="width:100%" onclick="exportCSV()">CSV (filtered)</button>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="vmain">
+        <div class="dp" id="dp">
+          <h3 id="dp-title">Detail<button class="xbtn" onclick="closeDetail()">×</button></h3>
+          <div class="dg" id="dp-body"></div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab on"  onclick="showTab('assignments')">Assignments</button>
+          <button class="tab"     onclick="showTab('unassigned')">Unassigned <span id="ua-count"></span></button>
+          <button class="tab"     onclick="showTab('mentors')">Mentor Load</button>
+          <button class="tab"     onclick="showTab('heatmap')">Score Map</button>
+        </div>
+
+        <div class="pnl on" id="tab-assignments">
+          <div class="tbl-wrap">
+            <table id="assign-table">
+              <thead><tr>
+                <th onclick="sortTable(0)">ID <span class="si">↕</span></th>
+                <th onclick="sortTable(1)">Student <span class="si">↕</span></th>
+                <th onclick="sortTable(2)">CGPA <span class="si">↕</span></th>
+                <th onclick="sortTable(3)">Tier <span class="si">↕</span></th>
+                <th onclick="sortTable(4)">Mentor <span class="si">↕</span></th>
+                <th onclick="sortTable(5)">Score <span class="si">↕</span></th>
+                <th>Shared Skills</th>
+                <th>Reason</th>
+              </tr></thead>
+              <tbody id="assign-body"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--muted)" id="row-count"></div>
+        </div>
+
+        <div class="pnl" id="tab-unassigned"><div id="ua-body"></div></div>
+        <div class="pnl" id="tab-mentors"><div class="cards" id="mentor-cards"></div></div>
+        <div class="pnl" id="tab-heatmap">
+          <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+            Click any cell to jump to that student. Blue border = assigned pair.
+          </p>
+          <div class="hm-wrap" id="hm-wrap"></div>
+          <div class="legend"><span>Low</span><div class="lg"></div><span>High</span>
+            <span style="margin-left:12px">■ assigned</span></div>
+        </div>
       </div>
     </div>
   </div>
-  <p class="zone-note">Supports .xlsx and .csv — any column names, auto-detected</p>
-
-  <h2 style="margin-top:4px">2 · Options</h2>
-  <div class="opt-row">
-    <label>Mentor capacity</label>
-    <input type="number" id="capacity" value="10" min="1" max="500"/>
-    <span class="hint">max students per mentor<br>(overridden by Max_Mentees column)</span>
-  </div>
-
-  <h2 style="margin-top:4px">3 · Run</h2>
-  <button class="btn btn-primary" id="run-btn" onclick="runMatcher()" disabled>
-    <span id="btn-icon">⚡</span>
-    <span id="btn-text">Run Matcher</span>
-  </button>
-
-  <div class="progress-wrap" id="progress-wrap">
-    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
-    <div class="progress-steps">
-      <div class="step" id="step-0"><div class="step-dot"></div>Uploading files…</div>
-      <div class="step" id="step-1"><div class="step-dot"></div>Inspecting columns…</div>
-      <div class="step" id="step-2"><div class="step-dot"></div>Mapping schema…</div>
-      <div class="step" id="step-3"><div class="step-dot"></div>Scoring all pairs…</div>
-      <div class="step" id="step-4"><div class="step-dot"></div>Solving assignments…</div>
-      <div class="step" id="step-5"><div class="step-dot"></div>Generating Excel…</div>
-    </div>
-  </div>
-
-  <div class="error-box" id="error-box"></div>
 </div>
 
-<!-- Results card -->
-<div class="card" id="results">
-  <h2>Results</h2>
-  <div class="stat-row" id="stat-row"></div>
-  <div class="tier-row" id="tier-row"></div>
-  <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Mentor load</div>
-  <div class="mentor-list" id="mentor-list"></div>
-  <button class="btn btn-primary" onclick="downloadFile()">
-    ⬇ Download assignments.xlsx
-  </button>
-  <button class="btn btn-ghost" onclick="resetUI()">Run again with different files</button>
+<!-- Download bar (shown after run completes) -->
+<div class="dl-bar" id="dl-bar">
+  <span style="color:var(--interest)">✓</span>
+  <span id="dl-summary" style="flex:1;font-size:13px"></span>
+  <button class="btn btn-primary btn-sm" onclick="downloadFile()">⬇ Download assignments.xlsx</button>
+  <button class="btn btn-ghost btn-sm" onclick="resetRun()">Run again</button>
 </div>
 
+<div id="toast"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 const API = 'http://localhost:5000';
-let FILES = {single:null, mentor:null, student:null};
-let LAST_BLOB = null;
-let stepTimer = null;
+let FILES   = {single:null,mentor:null,student:null};
+let BLOB    = null;
+let ALL     = [], UA = [], MENTORS = {}, FILTERED = [];
+let SORT_COL=-1, SORT_ASC=true;
+let stepTimer=null;
 
-// ── Server status check ───────────────────────────────────────
+// ── Server status ─────────────────────────────────────────────────
 async function checkServer(){
   try{
-    const r = await fetch(`${API}/status`, {signal: AbortSignal.timeout(3000)});
-    const d = await r.json();
-    if(d.ok){
-      document.getElementById('status-dot').className='dot green';
-      document.getElementById('status-text').textContent='Server ready';
-    }
-  } catch(e){
-    document.getElementById('status-dot').className='dot red';
-    document.getElementById('status-text').textContent=
-      'Server not running — start it with: python server.py';
-  }
+    const r=await fetch(`${API}/status`,{signal:AbortSignal.timeout(3000)});
+    const d=await r.json();
+    if(d.ok){dot('green','Server ready')}
+  }catch(e){dot('red','Server offline — run: python server.py')}
 }
-checkServer();
-setInterval(checkServer, 8000);
+function dot(cls,txt){
+  document.getElementById('sdot').className='dot '+cls;
+  document.getElementById('stxt').textContent=txt;
+}
+checkServer(); setInterval(checkServer,8000);
 
-// ── File handling ─────────────────────────────────────────────
-function fileChosen(e, slot){
-  const f = e.target.files[0];
-  if(!f) return;
-  FILES[slot] = f;
-  const label = slot==='single'?'single-label':slot+'-label';
-  document.getElementById(label).textContent = f.name;
-  document.getElementById('zone-'+(slot==='single'?'single':slot)).classList.add('loaded');
-  updateRunBtn();
+// ── Collapse toggle ───────────────────────────────────────────────
+function toggleRunner(){
+  const r=document.getElementById('runner');
+  const t=document.getElementById('toggle-btn');
+  const collapsed=r.classList.toggle('collapsed');
+  t.textContent=collapsed?'▶':'◀';
+  t.classList.toggle('collapsed',collapsed);
 }
-function drag(e, id){e.preventDefault();document.getElementById(id).classList.add('drag')}
-function undrag(id){document.getElementById(id).classList.remove('drag')}
-function drop(e, slot){
-  e.preventDefault(); undrag('zone-'+(slot==='single'?'single':slot));
-  const f = e.dataTransfer.files[0]; if(!f) return;
+
+// ── File handling ─────────────────────────────────────────────────
+function fc(e,slot){
+  const f=e.target.files[0]; if(!f) return;
   FILES[slot]=f;
-  const label = slot==='single'?'single-label':slot+'-label';
-  document.getElementById(label).textContent=f.name;
-  document.getElementById('zone-'+(slot==='single'?'single':slot)).classList.add('loaded');
-  updateRunBtn();
+  document.getElementById('l-'+slot).textContent=f.name;
+  document.getElementById('z-'+slot).classList.add('loaded');
+  updateBtn();
 }
-function updateRunBtn(){
-  const ready = FILES.single || FILES.mentor;
+function dg(e,id){e.preventDefault();document.getElementById(id).classList.add('drag')}
+function dug(id){document.getElementById(id).classList.remove('drag')}
+function dp(e,slot){
+  e.preventDefault(); dug('z-'+slot);
+  const f=e.dataTransfer.files[0]; if(!f) return;
+  FILES[slot]=f;
+  document.getElementById('l-'+slot).textContent=f.name;
+  document.getElementById('z-'+slot).classList.add('loaded');
+  updateBtn();
+}
+let UPLOAD_MODE = 'combined';   // 'combined' | 'separate'
+
+function setMode(mode){
+  UPLOAD_MODE = mode;
+
+  // Toggle button styles
+  document.getElementById('mode-combined').classList.toggle('on', mode === 'combined');
+  document.getElementById('mode-separate').classList.toggle('on', mode === 'separate');
+
+  // Show/hide panels
+  document.getElementById('panel-combined').style.display = mode === 'combined' ? 'block' : 'none';
+  document.getElementById('panel-separate').style.display = mode === 'separate' ? 'block' : 'none';
+
+  // Clear files from the hidden mode so they don't accidentally get sent
+  if(mode === 'combined'){
+    FILES.mentor = null; FILES.student = null;
+    document.getElementById('l-mentor').textContent = 'Mentor file';
+    document.getElementById('l-student').textContent = 'Student file';
+    document.getElementById('z-mentor').classList.remove('loaded');
+    document.getElementById('z-student').classList.remove('loaded');
+  } else {
+    FILES.single = null;
+    document.getElementById('l-single').textContent = 'Click or drag file here';
+    document.getElementById('z-single').classList.remove('loaded');
+  }
+  updateBtn();
+}
+
+function updateBtn(){
+  const ready = UPLOAD_MODE === 'combined'
+    ? !!FILES.single
+    : !!(FILES.mentor && FILES.student);
   document.getElementById('run-btn').disabled = !ready;
 }
 
-// ── Step animation ────────────────────────────────────────────
-let stepIdx = 0;
-const STEP_DELAYS = [400, 800, 1200, 2000, 1500, 800];
-
+// ── Progress steps ────────────────────────────────────────────────
+let si=0;
+const SD=[400,700,1100,2000,1400,700];
 function startSteps(){
-  stepIdx = 0;
-  document.querySelectorAll('.step').forEach(s=>{
-    s.className='step';
-    s.querySelector('.step-dot').style.background='var(--border)';
-  });
-  document.getElementById('progress-fill').style.width='0%';
-  advanceStep();
+  si=0;
+  document.querySelectorAll('.step').forEach(s=>{s.className='step'});
+  document.getElementById('prog-fill').style.width='0%';
+  advStep();
 }
-
-function advanceStep(){
-  if(stepIdx>0){
-    const prev = document.getElementById(`step-${stepIdx-1}`);
-    prev.className='step done';
-  }
-  if(stepIdx < 6){
-    const cur = document.getElementById(`step-${stepIdx}`);
-    cur.className='step active';
-    const pct = Math.round((stepIdx/6)*100);
-    document.getElementById('progress-fill').style.width=pct+'%';
-    stepTimer = setTimeout(()=>{stepIdx++;advanceStep();}, STEP_DELAYS[stepIdx]||800);
+function advStep(){
+  if(si>0) document.getElementById('s'+(si-1)).className='step done';
+  if(si<6){
+    document.getElementById('s'+si).className='step active';
+    document.getElementById('prog-fill').style.width=Math.round(si/6*100)+'%';
+    stepTimer=setTimeout(()=>{si++;advStep();},SD[si]||800);
   }
 }
-
 function finishSteps(){
   clearTimeout(stepTimer);
   document.querySelectorAll('.step').forEach(s=>s.className='step done');
-  document.getElementById('progress-fill').style.width='100%';
+  document.getElementById('prog-fill').style.width='100%';
 }
 
-// ── Run pipeline ──────────────────────────────────────────────
+// ── Run ───────────────────────────────────────────────────────────
 async function runMatcher(){
-  hideError();
-  document.getElementById('results').style.display='none';
-  document.getElementById('progress-wrap').style.display='block';
+  hideErr();
+  document.getElementById('prog-wrap').style.display='block';
   document.getElementById('run-btn').disabled=true;
-  document.getElementById('btn-text').textContent='Running…';
+  document.getElementById('btn-txt').textContent='Running…';
   startSteps();
 
-  const fd = new FormData();
-  const capacity = document.getElementById('capacity').value;
-  if(capacity) fd.append('capacity', capacity);
-
-  // Decide which file(s) to send
-  if(FILES.single && !FILES.mentor){
+  const fd=new FormData();
+  const cap=document.getElementById('capacity').value;
+  if(cap) fd.append('capacity',cap);
+  if(UPLOAD_MODE === 'combined'){
+    if(!FILES.single){ showErr('Please upload a combined file.'); return; }
     fd.append('mentor_file', FILES.single);
-  } else if(FILES.mentor){
+  } else {
+    if(!FILES.mentor){ showErr('Please upload a mentor file.'); return; }
     fd.append('mentor_file', FILES.mentor);
     if(FILES.student) fd.append('student_file', FILES.student);
+    else { showErr('Please upload a student file too.'); return; }
   }
 
   try{
-    // First get a preview summary (fast, no download)
-    const fdPreview = new FormData();
-    for(let [k,v] of fd.entries()) fdPreview.append(k,v);
-    const prev = await fetch(`${API}/preview`, {method:'POST', body:fdPreview});
-    if(!prev.ok){
-      const err = await prev.json();
-      throw new Error(err.error || 'Preview failed');
-    }
-    const summary = await prev.json();
+    // Preview (summary JSON)
+    const fp=new FormData();
+    for(let [k,v] of fd.entries()) fp.append(k,v);
+    const pr=await fetch(`${API}/preview`,{method:'POST',body:fp});
+    if(!pr.ok){ const e=await pr.json(); throw new Error(e.error||'Preview failed'); }
+    const summary=await pr.json();
 
-    // Then get the actual file
-    const res = await fetch(`${API}/run`, {method:'POST', body:fd});
-    if(!res.ok){
-      const err = await res.json().catch(()=>({error:'Unknown server error'}));
-      throw new Error(err.error || 'Run failed');
-    }
-    LAST_BLOB = await res.blob();
+    // Actual file
+    const res=await fetch(`${API}/run`,{method:'POST',body:fd});
+    if(!res.ok){ const e=await res.json().catch(()=>({error:'Unknown error'})); throw new Error(e.error||'Run failed'); }
+    BLOB=await res.blob();
 
     finishSteps();
-    showResults(summary);
+    setTimeout(()=>{
+      document.getElementById('prog-wrap').style.display='none';
+      document.getElementById('btn-txt').textContent='Run Matcher';
+      document.getElementById('run-btn').disabled=false;
 
-  } catch(e){
+      // Load the blob into the viewer
+      loadBlob(BLOB, summary);
+
+      // Show download bar
+      document.getElementById('dl-summary').textContent=
+        `${summary.assigned} assigned · ${summary.unassigned} unassigned · avg ${summary.avg_score}/10`;
+      document.getElementById('dl-bar').classList.add('show');
+
+      // Collapse runner, show viewer
+      const r=document.getElementById('runner');
+      if(!r.classList.contains('collapsed')) toggleRunner();
+    },400);
+
+  }catch(e){
     clearTimeout(stepTimer);
-    document.getElementById('progress-wrap').style.display='none';
-    showError(e.message);
+    document.getElementById('prog-wrap').style.display='none';
+    document.getElementById('btn-txt').textContent='Run Matcher';
     document.getElementById('run-btn').disabled=false;
-    document.getElementById('btn-text').textContent='Run Matcher';
+    showErr(e.message);
   }
 }
 
-// ── Results ───────────────────────────────────────────────────
-function showResults(s){
-  setTimeout(()=>{
-    document.getElementById('progress-wrap').style.display='none';
-    document.getElementById('btn-text').textContent='Run Matcher';
-
-    document.getElementById('stat-row').innerHTML=`
-      <div class="stat info"><div class="n">${s.total}</div><div class="l">Students</div></div>
-      <div class="stat good"><div class="n">${s.assigned}</div><div class="l">Assigned</div></div>
-      <div class="stat ${s.unassigned>0?'warn':'good'}"><div class="n">${s.unassigned}</div><div class="l">Unassigned</div></div>
-      <div class="stat info"><div class="n">${s.avg_score}</div><div class="l">Avg score/10</div></div>`;
-
-    document.getElementById('tier-row').innerHTML=`
-      <div class="tier-pill support"><div class="tn">${s.tiers.support||0}</div>Support</div>
-      <div class="tier-pill standard"><div class="tn">${s.tiers.standard||0}</div>Standard</div>
-      <div class="tier-pill interest"><div class="tn">${s.tiers.interest||0}</div>Interest</div>`;
-
-    const maxCap = Math.max(...Object.values(s.mentor_caps),1);
-    // Count assigned per mentor from summary
-    document.getElementById('mentor-list').innerHTML =
-      Object.entries(s.mentor_caps).map(([name,cap])=>`
-        <div class="mentor-row">
-          <span class="mn">${name}</span>
-          <div class="cap-wrap"><div class="cap-fill" style="width:${(cap/maxCap*100).toFixed(0)}%"></div></div>
-          <span class="mc">cap ${cap}</span>
-        </div>`).join('');
-
-    document.getElementById('results').style.display='block';
-    document.getElementById('results').scrollIntoView({behavior:'smooth'});
-    window.location.href = "/dashboard";
-  }, 400);
+// ── Load blob into viewer ─────────────────────────────────────────
+function loadBlob(blob, summary){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const wb=XLSX.read(ev.target.result,{type:'array'});
+    const aSheet=wb.SheetNames.find(n=>n.toLowerCase().includes('assign'))||wb.SheetNames[0];
+    const uSheet=wb.SheetNames.find(n=>n.toLowerCase().includes('unassign'));
+    const mSheet=wb.SheetNames.find(n=>n.toLowerCase().includes('summar')||n.toLowerCase().includes('mentor'));
+    ALL=XLSX.utils.sheet_to_json(wb.Sheets[aSheet],{defval:''});
+    UA =uSheet?XLSX.utils.sheet_to_json(wb.Sheets[uSheet],{defval:''}) :[];
+    const mRows=mSheet?XLSX.utils.sheet_to_json(wb.Sheets[mSheet],{defval:''}) :[];
+    buildMentors(mRows);
+    populateFilter();
+    applyFilters();
+    renderUA();
+    renderCards();
+    renderHeatmap();
+    updateStats(summary);
+    document.getElementById('empty-state').style.display='none';
+    document.getElementById('viewer').style.display='flex';
+    document.getElementById('hdr-meta').textContent=
+      `${ALL.length} assigned · ${UA.length} unassigned`;
+    toast(`✓ ${ALL.length} assignments ready`);
+  };
+  reader.readAsArrayBuffer(blob);
 }
 
-function downloadFile(){
-  if(!LAST_BLOB) return;
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(LAST_BLOB);
-  a.download = 'assignments.xlsx';
-  a.click();
-}
-
-function resetUI(){
-  FILES={single:null,mentor:null,student:null};
-  LAST_BLOB=null;
-  ['single','mentor','student'].forEach(s=>{
-    const lk = s==='single'?'single-label':s+'-label';
-    const zk = 'zone-'+(s==='single'?'single':s);
-    document.getElementById(lk).textContent=
-      s==='single'?'Combined file':s.charAt(0).toUpperCase()+s.slice(1)+' file';
-    document.getElementById(zk).classList.remove('loaded');
+function buildMentors(mRows){
+  MENTORS={};
+  ALL.forEach(r=>{
+    const mn=r['Mentor Name']||r['Mentor']||'';
+    if(!MENTORS[mn]) MENTORS[mn]={assigned:[],scores:[],track:''};
+    MENTORS[mn].assigned.push(r);
+    const sc=parseFloat(r['Match Score']||r['Score']||0);
+    if(!isNaN(sc)) MENTORS[mn].scores.push(sc);
   });
-  document.getElementById('results').style.display='none';
-  document.getElementById('run-btn').disabled=true;
-  document.getElementById('btn-text').textContent='Run Matcher';
-  hideError();
+  mRows.forEach(r=>{
+    const mn=r['Mentor Name']||r['Name']||'';
+    if(MENTORS[mn]) MENTORS[mn].track=r['Track']||'';
+  });
 }
 
-function showError(msg){
-  const b=document.getElementById('error-box');
+function updateStats(s){
+  document.getElementById('stat-grid').innerHTML=`
+    <div class="stat-box"><div class="n">${s.total}</div><div class="l">Students</div></div>
+    <div class="stat-box"><div class="n">${s.assigned}</div><div class="l">Assigned</div></div>
+    <div class="stat-box"><div class="n" style="color:${s.unassigned>0?'var(--support)':'var(--interest)'}">${s.unassigned}</div><div class="l">Unassigned</div></div>
+    <div class="stat-box"><div class="n">${s.avg_score}</div><div class="l">Avg /10</div></div>`;
+  document.getElementById('ua-count').textContent=s.unassigned>0?`(${s.unassigned})`:'';
+}
+
+function populateFilter(){
+  const sel=document.getElementById('f-mentor');
+  sel.innerHTML='<option value="">All mentors</option>';
+  Object.keys(MENTORS).sort().forEach(mn=>{
+    const o=document.createElement('option');
+    o.value=mn; o.textContent=mn; sel.appendChild(o);
+  });
+}
+
+// ── Filters ───────────────────────────────────────────────────────
+function applyFilters(){
+  const tier  =document.getElementById('f-tier').value;
+  const mentor=document.getElementById('f-mentor').value;
+  const minSc =parseFloat(document.getElementById('f-score').value);
+  const srch  =document.getElementById('f-search').value.toLowerCase();
+  FILTERED=ALL.filter(r=>{
+    const t =(r['Tier']||'').toUpperCase();
+    const mn=r['Mentor Name']||r['Mentor']||'';
+    const sc=parseFloat(r['Match Score']||r['Score']||0);
+    const nm=(r['Student Name']||r['Name']||'').toLowerCase();
+    const id=(r['Student ID']||r['ID']||'').toLowerCase();
+    if(tier   && t!==tier)         return false;
+    if(mentor && mn!==mentor)      return false;
+    if(!isNaN(sc)&&sc<minSc)      return false;
+    if(srch&&!nm.includes(srch)&&!id.includes(srch)) return false;
+    return true;
+  });
+  renderTable();
+  document.getElementById('row-count').textContent=
+    `Showing ${FILTERED.length} of ${ALL.length} students`;
+}
+
+function resetFilters(){
+  document.getElementById('f-tier').value='';
+  document.getElementById('f-mentor').value='';
+  document.getElementById('f-score').value=1;
+  document.getElementById('sc-lbl').textContent='1';
+  document.getElementById('f-search').value='';
+  applyFilters();
+}
+
+// ── Table ─────────────────────────────────────────────────────────
+function scCol(sc){ return sc>=8?'var(--interest)':sc>=5?'var(--standard)':'var(--support)'; }
+
+function renderTable(){
+  const tb=document.getElementById('assign-body');
+  if(!FILTERED.length){
+    tb.innerHTML='<tr class="erow"><td colspan="8">No students match the current filters.</td></tr>';
+    return;
+  }
+  tb.innerHTML=FILTERED.map((r,i)=>{
+    const sid  =r['Student ID']||r['ID']||'';
+    const sname=r['Student Name']||r['Name']||'';
+    const cgpa =r['CGPA']||'';
+    const tier =(r['Tier']||'').toUpperCase();
+    const mname=r['Mentor Name']||r['Mentor']||'';
+    const sc   =parseFloat(r['Match Score']||r['Score']||0);
+    const shared=r['Shared Skills']||r['Shared']||'—';
+    const reason=r['Reason']||'';
+    const pct  =isNaN(sc)?0:(sc/10*100).toFixed(0);
+    const skills=shared==='—'
+      ?'<span style="color:var(--muted)">—</span>'
+      :shared.split(',').map(s=>`<span class="chip chip-s">${s.trim()}</span>`).join('');
+    return `<tr onclick="showDetail(${i})" style="cursor:pointer">
+      <td class="mono" style="color:var(--muted)">${sid}</td>
+      <td style="font-weight:500">${sname}</td>
+      <td class="mono">${cgpa}</td>
+      <td><span class="pt pt-${tier.toLowerCase()}">${tier}</span></td>
+      <td>${mname}</td>
+      <td><div class="sc-cell">
+        <div class="sc-bar"><div class="sc-fill" style="width:${pct}%;background:${scCol(sc)}"></div></div>
+        <span class="mono" style="color:${scCol(sc)};min-width:34px">${isNaN(sc)?'—':sc.toFixed(2)}</span>
+      </div></td>
+      <td>${skills}</td>
+      <td class="rc">${reason||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Detail panel ──────────────────────────────────────────────────
+function showDetail(i){
+  const r=FILTERED[i];
+  const sname=r['Student Name']||r['Name']||'';
+  const tier=(r['Tier']||'').toUpperCase();
+  const mname=r['Mentor Name']||r['Mentor']||'';
+  const sc=parseFloat(r['Match Score']||r['Score']||0);
+  const reason=r['Reason']||'';
+  const shared=r['Shared Skills']||'—';
+  document.getElementById('dp-title').innerHTML=
+    `<span>${sname} → ${mname}
+      <span class="pt pt-${tier.toLowerCase()}" style="margin-left:7px">${tier}</span>
+    </span><button class="xbtn" onclick="closeDetail()">×</button>`;
+  const parts=reason.split('|').map(s=>s.trim()).filter(Boolean);
+  const bars=parts.map(p=>{
+    const m=p.match(/(\d+)%/); const v=m?parseInt(m[1]):50;
+    return `<div class="br">
+      <span class="bf">${p.replace(/\(.*?\)/,'').trim().slice(0,18)}</span>
+      <div class="bw"><div class="bfi" style="width:${v}%"></div></div>
+      <span class="bv">${m?m[0]:''}</span>
+    </div>`;
+  }).join('')||'<span style="color:var(--muted);font-size:12px">No breakdown available.</span>';
+  document.getElementById('dp-body').innerHTML=`
+    <div class="db"><div class="dl">Student</div>
+      <div class="dv"><strong>${sname}</strong>
+        <div style="color:var(--muted);font-size:11px;margin-top:3px">CGPA ${r['CGPA']||'—'} · ${tier}</div>
+      </div></div>
+    <div class="db"><div class="dl">Mentor</div>
+      <div class="dv"><strong>${mname}</strong>
+        <div style="color:${scCol(sc)};font-family:var(--mono);font-size:12px;margin-top:3px">${isNaN(sc)?'—':sc.toFixed(2)}/10</div>
+      </div></div>
+    <div class="db"><div class="dl">Shared Skills</div>
+      <div class="dv">${shared==='—'?'<span style="color:var(--muted)">None</span>':
+        shared.split(',').map(s=>`<span class="chip chip-s">${s.trim()}</span>`).join('')}
+      </div></div>
+    <div class="db"><div class="dl">Match signals</div><div class="dv">${bars}</div></div>
+    <div class="db" style="grid-column:1/-1"><div class="dl">Reason</div>
+      <div class="dv" style="font-size:12px;color:var(--muted);line-height:1.6">${reason||'—'}</div>
+    </div>`;
+  const el=document.getElementById('dp');
+  el.classList.add('show');
+  el.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeDetail(){ document.getElementById('dp').classList.remove('show'); }
+
+// ── Unassigned ────────────────────────────────────────────────────
+function renderUA(){
+  const el=document.getElementById('ua-body');
+  const real=UA.filter(r=>!Object.values(r).join('').toLowerCase().includes('all students were successfully'));
+  if(!real.length){
+    el.innerHTML='<div style="color:var(--interest);background:#4BCC7A11;border:1px solid #4BCC7A33;border-radius:var(--radius);padding:14px;font-size:13px">✓ All students were successfully assigned.</div>';
+    return;
+  }
+  el.innerHTML=real.map(r=>{
+    const sid=r['Student ID']||r['ID']||'';
+    const sname=r['Student Name']||r['Name']||'';
+    const cgpa=r['CGPA']||'';
+    const tier=(r['Tier']||'').toUpperCase();
+    const best=r['Best Mentor (if capacity existed)']||r['Best Mentor']||'—';
+    const bsc=r['Best Score']||'—';
+    const reason=r['Reason']||'All mentor capacities full.';
+    return `<div class="ua-card">
+      <h4><span class="mono" style="color:var(--muted)">${sid}</span> ${sname}
+        <span class="pt pt-${tier.toLowerCase()}">${tier}</span>
+        <span class="mono" style="color:var(--muted);font-size:10px">CGPA ${cgpa}</span>
+      </h4>
+      <p>Best match: <strong style="color:var(--text)">${best}</strong> (${bsc}/10) — capacity full.<br>${reason}</p>
+    </div>`;
+  }).join('');
+}
+
+// ── Mentor cards ──────────────────────────────────────────────────
+function renderCards(){
+  const el=document.getElementById('mentor-cards');
+  const max=Math.max(...Object.values(MENTORS).map(m=>m.assigned.length),1);
+  el.innerHTML=Object.entries(MENTORS)
+    .sort((a,b)=>b[1].assigned.length-a[1].assigned.length)
+    .map(([name,data])=>{
+      const n=data.assigned.length;
+      const avg=data.scores.length?(data.scores.reduce((a,b)=>a+b,0)/data.scores.length).toFixed(2):'—';
+      const pct=(n/max*100).toFixed(0);
+      const tb={};
+      data.assigned.forEach(r=>{ const t=(r['Tier']||'').toUpperCase(); tb[t]=(tb[t]||0)+1; });
+      const pills=Object.entries(tb).map(([t,c])=>`<span class="pt pt-${t.toLowerCase()}">${t} ${c}</span>`).join(' ');
+      return `<div class="card">
+        <div class="mn">${name}</div>
+        <div class="mt">${data.track||'—'}</div>
+        <div style="font-size:11px;margin-bottom:6px">${pills}</div>
+        <div class="cb"><div class="cf" style="width:${pct}%"></div></div>
+        <div class="cl"><span>${n} students</span><span>avg ${avg}/10</span></div>
+      </div>`;
+    }).join('');
+}
+
+// ── Heatmap ───────────────────────────────────────────────────────
+function renderHeatmap(){
+  const wrap=document.getElementById('hm-wrap');
+  if(!ALL.length){wrap.innerHTML='';return;}
+  const students=[...new Set(ALL.map(r=>r['Student Name']||r['Name']||''))];
+  const mentors=Object.keys(MENTORS);
+  const lk={};
+  ALL.forEach(r=>{
+    const s=r['Student Name']||r['Name']||'';
+    const m=r['Mentor Name']||r['Mentor']||'';
+    const sc=parseFloat(r['Match Score']||r['Score']||0);
+    lk[s]=lk[s]||{}; lk[s][m]={sc,a:true};
+  });
+  const disp=students.slice(0,20);
+  const allSc=ALL.map(r=>parseFloat(r['Match Score']||r['Score']||0)).filter(n=>!isNaN(n));
+  const mn=Math.min(...allSc), mx=Math.max(...allSc);
+  function hc(sc,a){
+    if(isNaN(sc)) return 'var(--surface2)';
+    const t=(sc-mn)/(mx-mn+.01);
+    const r=Math.round(26+t*49),g=Math.round(37+t*167),b=Math.round(53+t*69);
+    return a?`rgb(${r},${g},${b})`:`rgba(${r},${g},${b},.35)`;
+  }
+  let html=`<table class="hmt"><thead><tr>
+    <th style="min-width:110px">Student \\ Mentor</th>
+    ${mentors.map(m=>`<th>${m.split(' ')[0]}</th>`).join('')}
+  </tr></thead><tbody>`;
+  disp.forEach(s=>{
+    html+=`<tr><td class="hm-lbl">${s}</td>`;
+    mentors.forEach(m=>{
+      const c=(lk[s]||{})[m];
+      const sc=c?c.sc:NaN, a=c?c.a:false;
+      const txt=isNaN(sc)?'':sc.toFixed(1);
+      html+=`<td style="background:${hc(sc,a)};outline:${a?'2px solid var(--accent)':'1px solid var(--border)'};color:${a?'#fff':'rgba(255,255,255,.4)'}"
+              title="${s} → ${m}: ${txt}/10${a?' (assigned)':''}"
+              onclick="hmClick('${s.replace(/'/g,"\\'")}','${m.replace(/'/g,"\\'")}','${txt}')">${txt}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  if(students.length>20) html+=`<p style="font-size:11px;color:var(--muted);margin-top:6px">Showing first 20 of ${students.length} students.</p>`;
+  wrap.innerHTML=html;
+}
+function hmClick(s,m,sc){
+  toast(`${s} → ${m}: ${sc}/10`);
+  showTab('assignments');
+  document.getElementById('f-search').value=s;
+  applyFilters();
+}
+
+// ── Sort ──────────────────────────────────────────────────────────
+function sortTable(col){
+  if(SORT_COL===col) SORT_ASC=!SORT_ASC; else{SORT_COL=col;SORT_ASC=true;}
+  document.querySelectorAll('#assign-table th').forEach((th,i)=>th.classList.toggle('sorted',i===col));
+  const keys=['Student ID','Student Name','CGPA','Tier','Mentor Name','Match Score'];
+  const k=keys[col];
+  FILTERED.sort((a,b)=>{
+    let va=a[k]||'',vb=b[k]||'';
+    const na=parseFloat(va),nb=parseFloat(vb);
+    if(!isNaN(na)&&!isNaN(nb)) return SORT_ASC?na-nb:nb-na;
+    return SORT_ASC?String(va).localeCompare(String(vb)):String(vb).localeCompare(String(va));
+  });
+  renderTable();
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('on',['assignments','unassigned','mentors','heatmap'][i]===id);
+  });
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.getElementById('tab-'+id).classList.add('on');
+}
+
+// ── Export CSV ────────────────────────────────────────────────────
+function exportCSV(){
+  if(!FILTERED.length){toast('Nothing to export.');return;}
+  const keys=Object.keys(FILTERED[0]);
+  const rows=[keys.join(','),...FILTERED.map(r=>keys.map(k=>`"${(r[k]||'').toString().replace(/"/g,'""')}"`).join(','))];
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  a.download='filtered_assignments.csv'; a.click();
+  toast(`Exported ${FILTERED.length} rows`);
+}
+
+// ── Download & Reset ──────────────────────────────────────────────
+function downloadFile(){
+  if(!BLOB) return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(BLOB);
+  a.download='assignments.xlsx'; a.click();
+  toast('Downloaded assignments.xlsx');
+}
+
+function resetRun(){
+  FILES={single:null,mentor:null,student:null}; BLOB=null;
+  ALL=[]; UA=[]; MENTORS={}; FILTERED=[];
+  ['single','mentor','student'].forEach(s=>{
+    const lbl=document.getElementById('l-'+s);
+    lbl.textContent=s==='single'?'Combined file':s.charAt(0).toUpperCase()+s.slice(1)+' file';
+    document.getElementById('z-'+s).classList.remove('loaded');
+  });
+  document.getElementById('viewer').style.display='none';
+  document.getElementById('empty-state').style.display='flex';
+  document.getElementById('dl-bar').classList.remove('show');
+  document.getElementById('hdr-meta').textContent='Upload your data to get started';
+  document.getElementById('run-btn').disabled=true;
+  document.getElementById('err-box').style.display='none';
+  // Re-open runner if collapsed
+  const r=document.getElementById('runner');
+  if(r.classList.contains('collapsed')) toggleRunner();
+}
+
+// ── Error helpers ─────────────────────────────────────────────────
+function showErr(msg){
+  const b=document.getElementById('err-box');
   b.style.display='block';
   b.innerHTML=`<strong>Error:</strong> ${msg}<br>
-    <span style="font-size:11px;opacity:.7;margin-top:6px;display:block">
-    Make sure <code>server.py</code> is running: <code>python server.py</code></span>`;
+    <span style="font-size:10px;opacity:.7;margin-top:4px;display:block">
+    Make sure server.py is running: <code>python server.py</code></span>`;
 }
-function hideError(){document.getElementById('error-box').style.display='none'}
+function hideErr(){document.getElementById('err-box').style.display='none';}
+
+// ── Toast ─────────────────────────────────────────────────────────
+let tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2800);
+}
 </script>
 </body>
 </html>
