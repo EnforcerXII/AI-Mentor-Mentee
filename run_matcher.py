@@ -32,7 +32,7 @@ from data_loader import export_assignments
 
 # ── Args ─────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser()
-parser.add_argument("--path",          default="mentor_mentee_dataset.xlsx")
+parser.add_argument("--path",          default="dataset1.xlsx")
 parser.add_argument("--mentor-path",  default=None)  # two-file mode
 parser.add_argument("--student-path", default=None)  # two-file mode
 parser.add_argument("--mentor-sheet",  default=None)
