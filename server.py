@@ -73,9 +73,10 @@ def text_overlap(a, b):
 
 def compute_subscores(mentor, student, m_emb=None, s_emb=None):
     w = TIER_WEIGHTS[student["tier"]]
-    bio_sim = float(cosine_similarity([m_emb], [s_emb])[0][0]) \
-              if m_emb is not None else \
-              text_overlap(mentor["skills"], student["goals"])
+    if m_emb is not None:
+        bio_sim = float(cosine_similarity([m_emb], [s_emb])[0][0])
+    else:
+        bio_sim = text_overlap(mentor["skills"], student["goals"])
     issue_m    = text_overlap(student["issues"],    mentor["can_help_with"])
     interest_m = text_overlap(student["interests"], mentor["specialises_in"])
     skill_ov   = 1.0 if set(mentor["skills"]) & set(student["goals"]) else 0.0
@@ -93,25 +94,22 @@ def compute_subscores(mentor, student, m_emb=None, s_emb=None):
             "industry_match":round(ind_m,3),"avail_match":round(avail_m,3),
             "total":total}
 
-def build_reason(student, mentor, sub, tier):
+def build_reason(student, mentor, sub, ):
     lines = []
     shared = set(mentor["skills"]) & set(student["goals"])
-    if tier == "support":
-        if sub["issue_match"] > 0:
+    if sub["issue_match"] > 0:
             lines.append(f"Mentor addresses issues ({sub['issue_match']:.0%})")
-        else:
-            lines.append("Best available support mentor")
-    elif tier == "interest":
-        if sub["interest_match"] > 0:
-            lines.append(f"Mentor specialises in student's interests ({sub['interest_match']:.0%})")
-        else:
-            lines.append("Best available mentor for aspirations")
     else:
-        if sub["bio_similarity"] >= 0.5:
+            lines.append("Best available support mentor")
+    if sub["interest_match"] > 0:
+            lines.append(f"Mentor specialises in student's interests ({sub['interest_match']:.0%})")
+    else:
+            lines.append("Best available mentor for aspirations")
+    if sub["bio_similarity"] >= 0.5:
             lines.append(f"Strong semantic match ({sub['bio_similarity']:.2f})")
-        elif sub["bio_similarity"] >= 0.3:
+    elif sub["bio_similarity"] >= 0.3:
             lines.append(f"Moderate semantic match ({sub['bio_similarity']:.2f})")
-        else:
+    else:
             lines.append(f"Best available match ({sub['bio_similarity']:.2f})")
     if shared:
         lines.append(f"Shared skills: {', '.join(shared)}")
@@ -177,14 +175,24 @@ def run_pipeline(mentor_path, student_path, capacity_override):
     # 5. Build reason strings
     ua_reasons = {si: build_unassigned_reason(si, mentors, score_matrix, assignments)
                   for si in unassigned}
+    assigned_reasons = {}
 
+    for si, mi in assignments.items():
+        sub = subs[si][mi]
+
+        assigned_reasons[si] = build_reason(
+            students[si],
+            mentors[mi],
+            sub
+        )        
     # 6. Export to temp file
     tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
     tmp.close()
     export_assignments(assignments, students, mentors, score_matrix,
                        out_path=tmp.name,
                        unassigned=unassigned,
-                       unassigned_reasons=ua_reasons)
+                       unassigned_reasons=ua_reasons,
+                       assigned_reasons=assigned_reasons)
 
     # 7. Build summary for the UI
     tier_counts = {t: sum(1 for s in students if s["tier"]==t)

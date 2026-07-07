@@ -220,7 +220,8 @@ def load_data(
 def export_assignments(assignments: dict, students: list, mentors: list,
                        score_matrix, out_path: str = "assignments.xlsx",
                        unassigned: list = None,
-                       unassigned_reasons: dict = None):
+                       unassigned_reasons: dict = None,
+                       assigned_reasons: dict = None):
     """
     Write the final assignments to an Excel file.
 
@@ -234,6 +235,8 @@ def export_assignments(assignments: dict, students: list, mentors: list,
     """
     unassigned         = unassigned or []
     unassigned_reasons = unassigned_reasons or {}
+    assigned_reasons = assigned_reasons or {}
+
     import openpyxl
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.utils import get_column_letter
@@ -251,7 +254,7 @@ def export_assignments(assignments: dict, students: list, mentors: list,
     BORDER      = Border(left=thin, right=thin, top=thin, bottom=thin)
 
     headers = ["Student ID", "Student Name", "CGPA", "Tier",
-               "Mentor ID", "Mentor Name", "Match Score", "Shared Skills"]
+               "Mentor ID", "Mentor Name", "Match Score", "Shared Skills","Reason"]
     for col, h in enumerate(headers, 1):
         c = ws.cell(row=1, column=col, value=h)
         c.font, c.fill = HEADER_FONT, HEADER_FILL
@@ -263,10 +266,11 @@ def export_assignments(assignments: dict, students: list, mentors: list,
         s, m  = students[si], mentors[mi]
         score = round(float(score_matrix[si][mi]), 2)
         shared = ", ".join(set(m["skills"]) & set(s["goals"])) or "—"
+        reason = assigned_reasons[si]   
         tier_fill = PatternFill("solid", start_color=TIER_COLORS[s["tier"]])
 
         values = [s["id"], s["name"], s["cgpa"], s["tier"].upper(),
-                  m["id"], m["name"], score, shared]
+                  m["id"], m["name"], score, shared,reason]
         for col, val in enumerate(values, 1):
             c = ws.cell(row=row_idx, column=col, value=val)
             c.fill   = tier_fill

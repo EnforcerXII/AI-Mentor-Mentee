@@ -8,7 +8,6 @@ Works in three stages:
     No assumptions about column names.
 
   Stage 2 — MAP
-    Use Claude API to intelligently map discovered columns
     to the required fields. Falls back to fuzzy matching
     if no API key is available.
 

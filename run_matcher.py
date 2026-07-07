@@ -184,30 +184,27 @@ def compute_subscores(mentor, student, m_emb=None, s_emb=None):
         "total":           total,
     }
 
-def build_reason(student, mentor, subscores, score_10, tier):
+def build_reason(student, mentor, subscores, ):
     """Build a human-readable explanation of why this match was made."""
     lines = []
     shared_skills = set(mentor["skills"]) & set(student["goals"])
 
     # Primary driver based on tier
-    if tier == "support":
-        if subscores["issue_match"] > 0:
+    if subscores["issue_match"] > 0:
             lines.append(f"Mentor can address student's issues "
                          f"(overlap {subscores['issue_match']:.0%})")
-        else:
+    else:
             lines.append("No direct issue match found — best available support mentor")
-    elif tier == "interest":
-        if subscores["interest_match"] > 0:
+    if subscores["interest_match"] > 0:
             lines.append(f"Mentor specialises in student's career interests "
                          f"(overlap {subscores['interest_match']:.0%})")
-        else:
-            lines.append("No direct interest match — best available mentor for aspirations")
     else:
-        if subscores["bio_similarity"] >= 0.5:
+            lines.append("No direct interest match — best available mentor for aspirations")
+    if subscores["bio_similarity"] >= 0.5:
             lines.append(f"Strong semantic bio match ({subscores['bio_similarity']:.2f})")
-        elif subscores["bio_similarity"] >= 0.3:
+    elif subscores["bio_similarity"] >= 0.3:
             lines.append(f"Moderate semantic match ({subscores['bio_similarity']:.2f})")
-        else:
+    else:
             lines.append(f"Weak semantic match ({subscores['bio_similarity']:.2f}) — best available")
 
     # Secondary signals
@@ -299,7 +296,7 @@ for tier in ["support", "standard", "interest"]:
     for si, mi, sc in sorted(tier_s, key=lambda x: x[2], reverse=True):
         s, m = students[si], mentors[mi]
         sub  = subscores_[si][mi]
-        reason = build_reason(s, m, sub, sc, tier)
+        reason = build_reason(s, m, sub,)
         print(f"  {s['name']:<16} {s['cgpa']:>5}  {m['name']:<22} {sc:>5.2f}/10")
         print(f"    → {reason}")
 
@@ -330,9 +327,164 @@ unassigned_reasons = {
                                 N_STUDENTS, assignments)
     for si in unassigned
 }
- 
+assigned_reasons = {}
+
+for si, mi in assignments.items():
+    sub = subscores_[si][mi]
+
+    assigned_reasons[si] = build_reason(
+        students[si],
+        mentors[mi],
+        sub
+    )        
+
+# ───────────────────────────────────────────────────────────────
+# MENTOR-WISE MENTEE SUMMARY
+# ───────────────────────────────────────────────────────────────
+
+from collections import Counter
+
+print("\n" + "="*80)
+print("MENTOR-WISE MENTEE SUMMARY")
+print("="*80)
+
+for mi, mentor in enumerate(mentors):
+
+    assigned_students = [
+        students[si]
+        for si, m in assignments.items()
+        if m == mi
+    ]
+
+    print(f"\n👨‍🏫 Mentor: {mentor['name']}")
+    print(f"Track      : {mentor['track']}")
+    print(f"Skills     : {', '.join(mentor['skills'])}")
+    print(f"Mentees    : {len(assigned_students)}")
+
+    if not assigned_students:
+        print("No mentees assigned.")
+        continue
+
+    all_goals = []
+    all_interests = []
+    all_issues = []
+
+    print("\nAssigned Students:")
+
+    for s in assigned_students:
+
+        all_goals.extend(s["goals"])
+        all_interests.extend(s["interests"])
+        all_issues.extend(s["issues"])
+
+        print(f"  • {s['name']} (CGPA: {s['cgpa']}, Tier: {s['tier']})")
+
+        if s["goals"]:
+            print(f"      Goals     : {', '.join(s['goals'])}")
+
+        if s["interests"]:
+            print(f"      Interests : {', '.join(s['interests'])}")
+
+        if s["issues"]:
+            print(f"      Issues    : {', '.join(s['issues'])}")
+
+    goal_summary = Counter(all_goals).most_common(5)
+    interest_summary = Counter(all_interests).most_common(5)
+    issue_summary = Counter(all_issues).most_common(5)
+
+    print("\nSummary for Mentor")
+    print("------------------")
+
+    if goal_summary:
+        print("Most common learning goals:")
+        for g, c in goal_summary:
+            print(f"   • {g} ({c})")
+
+    if interest_summary:
+        print("\nMost common career interests:")
+        for g, c in interest_summary:
+            print(f"   • {g} ({c})")
+
+    if issue_summary:
+        print("\nMost common student issues:")
+        for g, c in issue_summary:
+            print(f"   • {g} ({c})");    
+
+# ───────────────────────────────────────────────────────────────
+# MENTOR-WISE MENTEE SUMMARY
+# ───────────────────────────────────────────────────────────────
+
+from collections import Counter
+
+print("\n" + "="*80)
+print("MENTOR-WISE MENTEE SUMMARY")
+print("="*80)
+
+for mi, mentor in enumerate(mentors):
+
+    assigned_students = [
+        students[si]
+        for si, m in assignments.items()
+        if m == mi
+    ]
+
+    print(f"\n👨‍🏫 Mentor: {mentor['name']}")
+    print(f"Track      : {mentor['track']}")
+    print(f"Skills     : {', '.join(mentor['skills'])}")
+    print(f"Mentees    : {len(assigned_students)}")
+
+    if not assigned_students:
+        print("No mentees assigned.")
+        continue
+
+    all_goals = []
+    all_interests = []
+    all_issues = []
+
+    print("\nAssigned Students:")
+
+    for s in assigned_students:
+
+        all_goals.extend(s["goals"])
+        all_interests.extend(s["interests"])
+        all_issues.extend(s["issues"])
+
+        print(f"  • {s['name']} (CGPA: {s['cgpa']}, Tier: {s['tier']})")
+
+        if s["goals"]:
+            print(f"      Goals     : {', '.join(s['goals'])}")
+
+        if s["interests"]:
+            print(f"      Interests : {', '.join(s['interests'])}")
+
+        if s["issues"]:
+            print(f"      Issues    : {', '.join(s['issues'])}")
+
+    goal_summary = Counter(all_goals).most_common(5)
+    interest_summary = Counter(all_interests).most_common(5)
+    issue_summary = Counter(all_issues).most_common(5)
+
+    print("\nSummary for Mentor")
+    print("------------------")
+
+    if goal_summary:
+        print("Most common learning goals:")
+        for g, c in goal_summary:
+            print(f"   • {g} ({c})")
+
+    if interest_summary:
+        print("\nMost common career interests:")
+        for g, c in interest_summary:
+            print(f"   • {g} ({c})")
+
+    if issue_summary:
+        print("\nMost common student issues:")
+        for g, c in issue_summary:
+            print(f"   • {g} ({c})")
+
 # ── 7. Export ─────────────────────────────────────────────────────
 export_assignments(assignments, students, mentors, score_matrix,
                    out_path=args.out,
                    unassigned=unassigned,
-                   unassigned_reasons=unassigned_reasons)
+                   unassigned_reasons=unassigned_reasons,
+                   assigned_reasons=assigned_reasons)
