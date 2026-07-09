@@ -48,3 +48,15 @@ python run_matcher.py --path mentor_mentee_dataset.xlsx
 
 ## EMERGENT VERSION OF THE APP
 https://ui-builder-111.preview.emergentagent.com/?utm_source=share
+
+### AI-Powered Mentor-Mentee Matching System using emergent
+
+* Built an intelligent web application using **Emergent** to automate the mentor allocation process.
+* Supports **Excel file uploads** for mentor and student datasets.
+* Automatically **detects dataset schemas** and maps columns using AI.
+* Matches students with mentors based on **skills, interests, career goals, CGPA, experience, availability, and semantic similarity**.
+* Ensures **balanced mentor assignments** by respecting mentor capacity constraints.
+* Displays **real-time matching statistics** and compatibility scores through an intuitive interface.
+* Allows users to **download mentor assignment reports** in Excel format.
+* Reduces manual effort, improves matching accuracy, and provides a scalable solution for educational institutions and mentoring programs.
+
